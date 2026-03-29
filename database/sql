@@ -1,0 +1,24 @@
+-- Update nama siswa
+UPDATE users SET name = 
+CASE id
+    WHEN 4 THEN 'Harry James Potter'
+    ...
+END
+WHERE id >= 4;
+
+-- Update email siswa
+UPDATE users 
+SET email = CONCAT(
+    LOWER(SUBSTRING_INDEX(name, ' ', 1)),
+    '@smartclass.com'
+)
+WHERE id >= 4;
+
+--update email siswa dari id 7 sampe 41 jadi ada absen
+UPDATE users 
+SET email = CONCAT(
+    LOWER(SUBSTRING_INDEX(name, ' ', 1)),
+    (id - 6),
+    '@smartclass.com'
+)
+WHERE id BETWEEN 7 AND 41;
