@@ -57,7 +57,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports', [ReportController::class, 'attendanceReport'])->name('reports');
     });
 
-    // Bendahara routes - CLEAN VERSION
+    // Bendahara routes
     Route::middleware('role:bendahara')->prefix('bendahara')->name('bendahara.')->group(function () {
         Route::get('/dashboard', [BendaharaController::class, 'dashboard'])->name('dashboard');
         
@@ -69,15 +69,17 @@ Route::middleware('auth')->group(function () {
         
         // NEW: Tracking pembayaran mingguan
         Route::get('/weekly-payments', [BendaharaController::class, 'weeklyPayments'])->name('weekly.payments');
-        Route::get('/arrears', [BendaharaController::class, 'arrearsList'])->name('arrears.list');
         Route::post('/process-payment', [BendaharaController::class, 'processWeeklyPayment'])->name('process.payment');
+        Route::post('/api/process-arrears', [BendaharaController::class, 'processArrears'])->name('api.process_arrears');
         
-        // Financial report
+        // Financial reports
         Route::get('/laporan', [BendaharaController::class, 'financialReport'])->name('laporan');
-        
-            });
-
-    // Sekretaris routes - CLEAN VERSION
+        Route::get('/api/laporan/cash', [BendaharaController::class, 'getCashReportData'])->name('api.laporan.cash');
+        Route::get('/api/laporan/attendance', [BendaharaController::class, 'getAttendanceReportData'])->name('api.laporan.attendance');
+        Route::get('/api/laporan/summary', [BendaharaController::class, 'getSummaryReportData'])->name('api.laporan.summary');
+    });
+    
+    // Sekretaris routes
     Route::middleware('role:sekretaris')->prefix('sekretaris')->name('sekretaris.')->group(function () {
         Route::get('/dashboard', [SekretarisController::class, 'dashboard'])->name('dashboard');
         
@@ -86,19 +88,21 @@ Route::middleware('auth')->group(function () {
         Route::post('/absensi/update', [SekretarisController::class, 'quickUpdateAttendance'])->name('absensi.update');
         Route::get('/api/absensi-hari-ini', [SekretarisController::class, 'getTodayAttendance'])->name('api.absensi_hari_ini');
         
-            });
-
+        // NEW: Attendance tracker
+        Route::get('/tracker-absensi', [SekretarisController::class, 'attendanceTracker'])->name('tracker.absensi');
+    });
+    
     // Siswa routes
     Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
         Route::get('/dashboard', [SiswaController::class, 'dashboard'])->name('dashboard');
         Route::get('/api/status-saya', [SiswaController::class, 'getMyStatus'])->name('api.status_saya');
         Route::get('/riwayat-absensi', [SiswaController::class, 'riwayatAbsensi'])->name('riwayat.absensi');
     });
-});
-
-// Public API routes for reporting
-Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
-    Route::get('/reports/attendance', [ReportController::class, 'attendanceReport'])->name('reports.attendance');
-    Route::get('/reports/cash', [ReportController::class, 'cashReport'])->name('reports.cash');
-    Route::get('/reports/summary', [ReportController::class, 'summaryReport'])->name('reports.summary');
+    
+    // Public API routes for reporting
+    Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
+        Route::get('/reports/attendance', [ReportController::class, 'attendanceReport'])->name('reports.attendance');
+        Route::get('/reports/cash', [ReportController::class, 'cashReport'])->name('reports.cash');
+        Route::get('/reports/summary', [ReportController::class, 'summaryReport'])->name('reports.summary');
+    });
 });

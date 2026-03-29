@@ -10,29 +10,53 @@
         <table class="w-full">
             <thead>
                 <tr>
-                    <th class="pixel-card px-3 py-2 bg-purple-300 text-left text-xs pixel-font">NAMA</th>
-                    <th class="pixel-card px-3 py-2 bg-purple-300 text-left text-xs pixel-font">NIS</th>
-                    <th class="pixel-card px-3 py-2 bg-purple-300 text-left text-xs pixel-font">KELAS</th>
-                    <th class="pixel-card px-3 py-2 bg-purple-300 text-center text-xs pixel-font">AKSI</th>
+                    <th class="pixel-card px-4 py-3 bg-purple-300 text-left text-xs pixel-font">NAMA</th>
+                    <th class="pixel-card px-4 py-3 bg-purple-300 text-left text-xs pixel-font">EMAIL</th>
+                    <th class="pixel-card px-4 py-3 bg-purple-300 text-left text-xs pixel-font">ROLE</th>
+                    <th class="pixel-card px-4 py-3 bg-purple-300 text-center text-xs pixel-font">STATUS</th>
+                    <th class="pixel-card px-4 py-3 bg-purple-300 text-center text-xs pixel-font">AKSI</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($students as $student)
-                <tr>
-                    <td class="pixel-card px-3 py-2 bg-white text-xs font-bold">{{ $student->name }}</td>
-                    <td class="pixel-card px-3 py-2 bg-white text-xs">{{ $student->nis }}</td>
-                    <td class="pixel-card px-3 py-2 bg-white text-xs">{{ $student->class }}</td>
-                    <td class="pixel-card px-3 py-2 bg-white text-center text-xs">
-                        <a href="{{ route('admin.students.edit', $student) }}" class="text-blue-600 font-bold hover:underline">EDIT</a>
-                        <form method="POST" action="{{ route('admin.students.delete', $student) }}" class="inline">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="text-red-600 font-bold hover:underline ml-2">HAPUS</button>
-                        </form>
-                    </td>
-                </tr>
+                    <tr class="hover:bg-purple-50 transition-colors">
+                        <td class="pixel-card px-4 py-3 bg-white text-sm font-bold">{{ $student->name }}</td>
+                        <td class="pixel-card px-4 py-3 bg-white text-xs">{{ $student->email }}</td>
+                        <td class="pixel-card px-4 py-3 bg-white text-xs">
+                            <span class="pixel-card px-2 py-1 bg-blue-200 text-blue-700 text-xs">
+                                {{ $student->role }}
+                            </span>
+                        </td>
+                        <td class="pixel-card px-4 py-3 bg-white text-center text-xs">
+                            <span class="pixel-card px-2 py-1 bg-green-200 text-green-700 text-xs">
+                                ✓ AKTIF
+                            </span>
+                        </td>
+                        <td class="pixel-card px-4 py-3 bg-white text-center text-xs">
+                            <a href="{{ route('admin.students.edit', $student->id) }}" 
+                               class="pixel-button px-3 py-1 bg-blue-400 text-black text-xs hover:bg-blue-300 mr-1">
+                                ✏️ EDIT
+                            </a>
+                            <form method="POST" action="{{ route('admin.students.delete', $student->id) }}" 
+                                  onsubmit="return confirm('Apakah Anda yakin ingin menghapus siswa ini?')" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="pixel-button px-3 py-1 bg-red-400 text-white text-xs hover:bg-red-300">
+                                    🗑️ HAPUS
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
+    </div>
+    
+    <!-- Back to Dashboard -->
+    <div class="text-center mt-6">
+        <a href="{{ route('admin.dashboard') }}" class="pixel-button px-6 py-3 bg-purple-400 text-black pixel-font text-xs">
+            🔙 KEMBALI KE DASHBOARD
+        </a>
     </div>
 </div>
 @endsection

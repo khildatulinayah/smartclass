@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Transaction;
+use App\Models\WeeklyPayment;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -43,6 +44,33 @@ class SiswaController extends Controller
             
         $totalPemasukan = $transactions->where('type', 'income')->sum('amount');
         $totalPengeluaran = $transactions->where('type', 'expense')->sum('amount');
+        
+        // NEW: Get weekly payment status for current month (Maret 2026)
+        $currentMonth = 3; // Maret
+        $currentYear = 2026;
+        
+        $weeklyPayments = WeeklyPayment::where('student_id', $student->id)
+                                ->where('month', $currentMonth)
+                                ->where('year', $currentYear)
+                                ->orderBy('week_number')
+                                ->get();
+        
+        // Calculate payment statistics
+        $totalWeeks = 4;
+        $paidWeeks = $weeklyPayments->where('status', 'paid')->count();
+        $unpaidWeeks = $weeklyPayments->where('status', 'unpaid')->count();
+        $totalKasBulanan = $weeklyPayments->sum('amount');
+        $kasSudahBayar = $weeklyPayments->where('status', 'paid')->sum('amount');
+        $kasTunggakan = $weeklyPayments->where('status', 'unpaid')->sum('amount');
+        
+        // Payment status text
+        $statusKas = 'Lunas';
+        if ($unpaidWeeks > 0) {
+            $statusKas = 'Ada Tunggakan';
+        }
+        if ($paidWeeks === 0) {
+            $statusKas = 'Belum Bayar';
+        }
 
         return view('siswa.dashboard', compact(
             'attendances', 
@@ -54,7 +82,16 @@ class SiswaController extends Controller
             'totalDays',
             'statusHariIni',
             'totalPemasukan',
-            'totalPengeluaran'
+            'totalPengeluaran',
+            // NEW: Weekly payment data
+            'weeklyPayments',
+            'totalWeeks',
+            'paidWeeks',
+            'unpaidWeeks',
+            'totalKasBulanan',
+            'kasSudahBayar',
+            'kasTunggakan',
+            'statusKas'
         ));
     }
 

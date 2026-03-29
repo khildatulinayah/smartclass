@@ -1,53 +1,143 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="max-w-6xl mx-auto">
     <!-- Header -->
     <div class="mb-8 text-center">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">Absensi Harian</h1>
-        <p class="text-gray-600">{{ \Carbon\Carbon::parse($today)->locale('id')->format('l, d F Y') }}</p>
+        <h1 class="pixel-font text-3xl text-yellow-400 mb-2" style="font-size: 24px; letter-spacing: 2px;">~ ABSENSI HARIAN ~</h1>
+        <p class="pixel-font text-lg text-gray-700">{{ \Carbon\Carbon::parse($today)->locale('id')->format('l, d F Y') }}</p>
+        
+        @if($isAttendanceClosed)
+            <div class="pixel-card p-3 bg-red-200 inline-block mt-4">
+                <p class="pixel-font text-sm text-red-700">
+                    ⚠️ Batas waktu absen hadir sudah lewat (pukul 08:00)
+                </p>
+            </div>
+        @endif
     </div>
 
     <!-- Quick Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-green-100 border border-green-300 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-green-800" id="hadir-count">0</div>
-            <div class="text-sm text-green-600">Hadir</div>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div class="pixel-card p-4 bg-gray-200 text-center">
+            <div class="pixel-font text-2xl mb-2">⏳</div>
+            <p class="pixel-font text-lg font-bold text-gray-700" id="belum-absen-count">0</p>
+            <p class="pixel-font text-xs text-gray-600">Belum Absen</p>
         </div>
-        <div class="bg-yellow-100 border border-yellow-300 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-yellow-800" id="sakit-count">0</div>
-            <div class="text-sm text-yellow-600">Sakit</div>
+        <div class="pixel-card p-4 bg-green-200 text-center">
+            <div class="pixel-font text-2xl mb-2">✅</div>
+            <p class="pixel-font text-lg font-bold text-green-700" id="hadir-count">0</p>
+            <p class="pixel-font text-xs text-green-600">Hadir</p>
         </div>
-        <div class="bg-blue-100 border border-blue-300 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-blue-800" id="izin-count">0</div>
-            <div class="text-sm text-blue-600">Izin</div>
+        <div class="pixel-card p-4 bg-yellow-200 text-center">
+            <div class="pixel-font text-2xl mb-2">🤒</div>
+            <p class="pixel-font text-lg font-bold text-yellow-700" id="sakit-count">0</p>
+            <p class="pixel-font text-xs text-yellow-600">Sakit</p>
         </div>
-        <div class="bg-red-100 border border-red-300 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-red-800" id="alpha-count">0</div>
-            <div class="text-sm text-red-600">Alpha</div>
+        <div class="pixel-card p-4 bg-blue-200 text-center">
+            <div class="pixel-font text-2xl mb-2">📝</div>
+            <p class="pixel-font text-lg font-bold text-blue-700" id="izin-count">0</p>
+            <p class="pixel-font text-xs text-blue-600">Izin</p>
+        </div>
+        <div class="pixel-card p-4 bg-red-200 text-center">
+            <div class="pixel-font text-2xl mb-2">❌</div>
+            <p class="pixel-font text-lg font-bold text-red-700" id="alpha-count">0</p>
+            <p class="pixel-font text-xs text-red-600">Alpha</p>
         </div>
     </div>
 
     <!-- Filter & Search -->
-    <div class="bg-white rounded-lg shadow-sm border p-4 mb-6">
+    <div class="pixel-card p-4 bg-white mb-6">
         <div class="flex flex-col md:flex-row gap-4">
             <div class="flex-1">
                 <input type="text" id="search-student" placeholder="Cari nama siswa..." 
-                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    class="pixel-card px-4 py-2 text-xs w-full">
             </div>
             <div class="flex gap-2">
-                <button onclick="filterByStatus('all')" class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                <button onclick="filterByStatus('all')" class="pixel-button px-4 py-2 bg-gray-400 text-black pixel-font text-xs filter-btn">
                     Semua
                 </button>
-                <button onclick="filterByStatus('hadir')" class="filter-btn px-4 py-2 bg-green-200 text-green-700 rounded-lg hover:bg-green-300 transition">
+                <button onclick="filterByStatus('belum_absen')" class="pixel-button px-4 py-2 bg-gray-300 text-black pixel-font text-xs filter-btn">
+                    Belum
+                </button>
+                <button onclick="filterByStatus('hadir')" class="pixel-button px-4 py-2 bg-green-400 text-black pixel-font text-xs filter-btn">
                     Hadir
                 </button>
-                <button onclick="filterByStatus('sakit')" class="filter-btn px-4 py-2 bg-yellow-200 text-yellow-700 rounded-lg hover:bg-yellow-300 transition">
+                <button onclick="filterByStatus('sakit')" class="pixel-button px-4 py-2 bg-yellow-400 text-black pixel-font text-xs filter-btn">
                     Sakit
                 </button>
-                <button onclick="filterByStatus('izin')" class="filter-btn px-4 py-2 bg-blue-200 text-blue-700 rounded-lg hover:bg-blue-300 transition">
+                <button onclick="filterByStatus('izin')" class="pixel-button px-4 py-2 bg-blue-400 text-black pixel-font text-xs filter-btn">
                     Izin
                 </button>
+                <button onclick="filterByStatus('alpha')" class="pixel-button px-4 py-2 bg-red-400 text-black pixel-font text-xs filter-btn">
+                    Alpha
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students List -->
+    <div class="pixel-card p-6 bg-white">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="students-list">
+            @foreach($students as $student)
+                @php
+                    $attendance = $attendances->get($student->id);
+                    $status = $attendance ? $attendance->status : 'belum_absen';
+                    $attendanceTime = $attendance ? $attendance->attendance_time : null;
+                @endphp
+                
+                <div class="student-item" data-name="{{ strtolower($student->name) }}" data-status="{{ $status }}">
+                    <div class="pixel-card p-4 {{ $status == 'belum_absen' ? 'bg-gray-100' : ($status == 'hadir' ? 'bg-green-100' : ($status == 'sakit' ? 'bg-yellow-100' : ($status == 'izin' ? 'bg-blue-100' : 'bg-red-100') }}">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <p class="pixel-font text-sm font-bold">{{ $student->name }}</p>
+                                <p class="pixel-font text-xs text-gray-600">NIS: {{ $student->id }}</p>
+                            </div>
+                            <div class="text-right">
+                                @if($attendanceTime)
+                                    <p class="pixel-font text-xs text-gray-500">{{ \Carbon\Carbon::parse($attendanceTime)->format('H:i') }}</p>
+                                @endif
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-5 gap-1">
+                            <button onclick="updateStatus({{ $student->id }}, 'belum_absen')" 
+                                    class="pixel-button px-2 py-1 {{ $status == 'belum_absen' ? 'bg-gray-600' : 'bg-gray-400' }} text-white pixel-font text-xs status-btn"
+                                    @if($isAttendanceClosed && $status == 'belum_absen') disabled title="Absen hadir sudah ditutup" @endif>
+                                ⏳
+                            </button>
+                            <button onclick="updateStatus({{ $student->id }}, 'hadir')" 
+                                    class="pixel-button px-2 py-1 {{ $status == 'hadir' ? 'bg-green-600' : 'bg-green-400' }} text-white pixel-font text-xs status-btn"
+                                    @if($isAttendanceClosed) disabled title="Absen hadir sudah ditutup" @endif>
+                                ✅
+                            </button>
+                            <button onclick="updateStatus({{ $student->id }}, 'sakit')" 
+                                    class="pixel-button px-2 py-1 {{ $status == 'sakit' ? 'bg-yellow-600' : 'bg-yellow-400' }} text-white pixel-font text-xs status-btn">
+                                🤒
+                            </button>
+                            <button onclick="updateStatus({{ $student->id }}, 'izin')" 
+                                    class="pixel-button px-2 py-1 {{ $status == 'izin' ? 'bg-blue-600' : 'bg-blue-400' }} text-white pixel-font text-xs status-btn">
+                                📝
+                            </button>
+                            <button onclick="updateStatus({{ $student->id }}, 'alpha')" 
+                                    class="pixel-button px-2 py-1 {{ $status == 'alpha' ? 'bg-red-600' : 'bg-red-400' }} text-white pixel-font text-xs status-btn">
+                                ❌
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    <!-- Current Time Display -->
+    <div class="text-center mt-6">
+        <div class="pixel-card p-3 bg-blue-200 inline-block">
+            <p class="pixel-font text-sm text-blue-700">
+                🕐 Waktu Sekarang: <span id="current-time">{{ $currentTime->format('H:i:s') }}</span>
+            </p>
+        </div>
+    </div>
+</div>
                 <button onclick="filterByStatus('alpha')" class="filter-btn px-4 py-2 bg-red-200 text-red-700 rounded-lg hover:bg-red-300 transition">
                     Alpha
                 </button>

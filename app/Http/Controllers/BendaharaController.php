@@ -146,8 +146,9 @@ class BendaharaController extends Controller
     // NEW: Tracking pembayaran mingguan
     public function weeklyPayments()
     {
-        $currentMonth = now()->month;
-        $currentYear = now()->year;
+        // Gunakan bulan Maret 2026 sesuai data seeder
+        $currentMonth = 3; // Maret
+        $currentYear = 2026;
         
         // Generate tagihan untuk semua siswa jika belum ada
         $this->generateMonthlyBills($currentMonth, $currentYear);
@@ -187,6 +188,12 @@ class BendaharaController extends Controller
     // Helper: generate tagihan bulanan
     private function generateMonthlyBills($month, $year)
     {
+        // Cek apakah data sudah ada
+        $existingCount = WeeklyPayment::where('month', $month)->where('year', $year)->count();
+        if ($existingCount > 0) {
+            return 0; // Data sudah ada, tidak perlu generate ulang
+        }
+        
         $students = User::where('role', 'siswa')->get();
         $generatedCount = 0;
         
@@ -221,11 +228,53 @@ class BendaharaController extends Controller
         ]);
     }
 
+    // NEW: Proses pelunasan tunggakan (bisa kapan saja)
+    public function processArrears(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:users,id',
+            'transaction_id' => 'required|exists:transactions,id'
+        ]);
+        
+        $studentId = $request->student_id;
+        $transactionId = $request->transaction_id;
+        
+        // Ambil semua pembayaran yang belum lunas untuk siswa ini
+        $unpaidPayments = WeeklyPayment::where('student_id', $studentId)
+                                     ->where('status', 'unpaid')
+                                     ->get();
+        
+        if ($unpaidPayments->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada tunggakan untuk siswa ini'
+            ]);
+        }
+        
+        // Update semua pembayaran menjadi lunas
+        $updatedCount = 0;
+        foreach ($unpaidPayments as $payment) {
+            $payment->update([
+                'status' => 'paid',
+                'payment_date' => now()->format('Y-m-d'),
+                'transaction_id' => $transactionId
+            ]);
+            $updatedCount++;
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil melunasi {$updatedCount} tunggakan",
+            'payments_updated' => $updatedCount
+        ]);
+    }
+
     // NEW: Daftar siswa yang menunggak
     public function arrearsList()
     {
-        $currentMonth = now()->month;
-        $currentYear = now()->year;
+        // Gunakan bulan Maret 2026 sesuai data seeder
+        $currentMonth = 3; // Maret
+        $currentYear = 2026;
         
         // Generate tagihan jika belum ada
         $this->generateMonthlyBills($currentMonth, $currentYear);

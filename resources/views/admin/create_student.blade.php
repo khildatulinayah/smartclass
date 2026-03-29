@@ -18,16 +18,28 @@
         </div>
         
         <div class="mb-4">
-            <label class="pixel-font text-xs text-gray-900 mb-2 block">NIS</label>
-            <input type="text" name="nis" class="pixel-border w-full px-3 py-2 bg-white text-xs" required>
+            <label class="pixel-font text-xs text-gray-900 mb-2 block">PASSWORD</label>
+            <input type="password" name="password" class="pixel-border w-full px-3 py-2 bg-white text-xs" required>
         </div>
         
         <div class="mb-6">
-            <label class="pixel-font text-xs text-gray-900 mb-2 block">KELAS</label>
-            <input type="text" name="class" class="pixel-border w-full px-3 py-2 bg-white text-xs" required>
+            <label class="pixel-font text-xs text-gray-900 mb-2 block">ROLE</label>
+            <select name="role" class="pixel-border w-full px-3 py-2 bg-white text-xs">
+                <option value="siswa">SISWA</option>
+                <option value="admin">ADMIN</option>
+                <option value="bendahara">BENDAHARA</option>
+                <option value="sekretaris">SEKRETARIS</option>
+            </select>
         </div>
         
-        <button type="submit" class="pixel-button px-6 py-2 bg-green-400 text-black pixel-font text-xs">SIMPAN</button>
+        <div class="flex justify-between">
+            <a href="{{ route('admin.students') }}" class="pixel-button px-6 py-2 bg-gray-400 text-black pixel-font text-xs">
+                🔙 KEMBALI
+            </a>
+            <button type="submit" class="pixel-button px-6 py-2 bg-green-400 text-black pixel-font text-xs">
+                💾 SIMPAN
+            </button>
+        </div>
     </form>
 </div>
 @endsection

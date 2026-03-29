@@ -52,8 +52,8 @@ class ReportController extends Controller
         $year = $request->get('year', Carbon::now()->year);
         
         $students = User::where('role', 'siswa')->get();
-        $payments = CashPayment::where('month', $month)
-            ->where('year', $year)
+        $payments = CashPayment::whereMonth('date', $month)
+            ->whereYear('date', $year)
             ->get()
             ->keyBy('student_id');
         
@@ -65,7 +65,7 @@ class ReportController extends Controller
                 'student' => $student,
                 'status' => $payment ? $payment->status : 'unpaid',
                 'amount' => $payment ? $payment->amount : 0,
-                'paid_at' => $payment ? $payment->created_at->format('d M Y') : '-'
+                'paid_at' => $payment ? $payment->created_at->format('d M Y') : null
             ];
         }
         
@@ -104,12 +104,12 @@ class ReportController extends Controller
         // Cash Summary
         $cashStats = [
             'total_students' => User::where('role', 'siswa')->count(),
-            'paid_students' => CashPayment::where('month', $currentMonth)
-                ->where('year', $currentYear)
+            'paid_students' => CashPayment::whereMonth('date', $currentMonth)
+                ->whereYear('date', $currentYear)
                 ->where('status', 'paid')
                 ->count(),
-            'total_amount' => CashPayment::where('month', $currentMonth)
-                ->where('year', $currentYear)
+            'total_amount' => CashPayment::whereMonth('date', $currentMonth)
+                ->whereYear('date', $currentYear)
                 ->where('status', 'paid')
                 ->sum('amount'),
             'expected_amount' => User::where('role', 'siswa')->count() * 5000
