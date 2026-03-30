@@ -45,9 +45,9 @@ class SiswaController extends Controller
         $totalPemasukan = $transactions->where('type', 'income')->sum('amount');
         $totalPengeluaran = $transactions->where('type', 'expense')->sum('amount');
         
-        // NEW: Get weekly payment status for current month (Maret 2026)
-        $currentMonth = 3; // Maret
-        $currentYear = 2026;
+        // Get weekly payment status for current month
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
         
         $weeklyPayments = WeeklyPayment::where('student_id', $student->id)
                                 ->where('month', $currentMonth)
@@ -83,7 +83,7 @@ class SiswaController extends Controller
             'statusHariIni',
             'totalPemasukan',
             'totalPengeluaran',
-            // NEW: Weekly payment data
+            // Weekly payment data
             'weeklyPayments',
             'totalWeeks',
             'paidWeeks',
@@ -91,7 +91,9 @@ class SiswaController extends Controller
             'totalKasBulanan',
             'kasSudahBayar',
             'kasTunggakan',
-            'statusKas'
+            'statusKas',
+            'currentMonth',
+            'currentYear'
         ));
     }
 

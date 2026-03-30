@@ -5,7 +5,6 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BendaharaController;
 use App\Http\Controllers\SekretarisController;
 use App\Http\Controllers\SiswaController;
-use App\Http\Controllers\ReportController;
 
 // Login routes
 Route::get('/', function () {
@@ -52,57 +51,38 @@ Route::middleware('auth')->group(function () {
         Route::get('/students/{student}/edit', [AdminController::class, 'editStudent'])->name('students.edit');
         Route::put('/students/{student}', [AdminController::class, 'updateStudent'])->name('students.update');
         Route::delete('/students/{student}', [AdminController::class, 'deleteStudent'])->name('students.delete');
-        
-        // Reports route
-        Route::get('/reports', [ReportController::class, 'attendanceReport'])->name('reports');
+        Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     });
 
     // Bendahara routes
     Route::middleware('role:bendahara')->prefix('bendahara')->name('bendahara.')->group(function () {
         Route::get('/dashboard', [BendaharaController::class, 'dashboard'])->name('dashboard');
-        
-        // Simple cash management (NEW SYSTEM)
         Route::get('/kas', [BendaharaController::class, 'simpleCash'])->name('kas');
         Route::post('/kas/store', [BendaharaController::class, 'storeSimpleTransaction'])->name('kas.store');
         Route::get('/api/transactions', [BendaharaController::class, 'getTransactions'])->name('api.transactions');
         Route::delete('/transactions/{id}', [BendaharaController::class, 'deleteTransaction'])->name('transactions.delete');
-        
-        // NEW: Tracking pembayaran mingguan
         Route::get('/weekly-payments', [BendaharaController::class, 'weeklyPayments'])->name('weekly.payments');
         Route::post('/process-payment', [BendaharaController::class, 'processWeeklyPayment'])->name('process.payment');
         Route::post('/api/process-arrears', [BendaharaController::class, 'processArrears'])->name('api.process_arrears');
-        
-        // Financial reports
         Route::get('/laporan', [BendaharaController::class, 'financialReport'])->name('laporan');
-        Route::get('/api/laporan/cash', [BendaharaController::class, 'getCashReportData'])->name('api.laporan.cash');
-        Route::get('/api/laporan/attendance', [BendaharaController::class, 'getAttendanceReportData'])->name('api.laporan.attendance');
-        Route::get('/api/laporan/summary', [BendaharaController::class, 'getSummaryReportData'])->name('api.laporan.summary');
     });
     
     // Sekretaris routes
     Route::middleware('role:sekretaris')->prefix('sekretaris')->name('sekretaris.')->group(function () {
         Route::get('/dashboard', [SekretarisController::class, 'dashboard'])->name('dashboard');
-        
-        // Simple daily attendance (NEW SYSTEM)
-        Route::get('/absensi', [SekretarisController::class, 'dailyAttendance'])->name('absensi');
-        Route::post('/absensi/update', [SekretarisController::class, 'quickUpdateAttendance'])->name('absensi.update');
-        Route::get('/api/absensi-hari-ini', [SekretarisController::class, 'getTodayAttendance'])->name('api.absensi_hari_ini');
-        
-        // NEW: Attendance tracker
-        Route::get('/tracker-absensi', [SekretarisController::class, 'attendanceTracker'])->name('tracker.absensi');
+        Route::get('/absensi', [SekretarisController::class, 'simpleAttendance'])->name('absensi');
+        Route::post('/absensi/update', [SekretarisController::class, 'batchUpdateAttendance'])->name('absensi.update');
+        Route::get('/tracker', [SekretarisController::class, 'simpleTracker'])->name('tracker');
+        Route::get('/laporan-absensi', [SekretarisController::class, 'laporanAbsensi'])->name('laporan');
+        Route::get('/laporan-absensi/cetak', [SekretarisController::class, 'cetakAbsensi'])->name('laporan.cetak');
     });
+
+    // Public API routes
+    Route::get('/api/student-attendance/{studentId}', [SekretarisController::class, 'getStudentAttendance']);
     
     // Siswa routes
     Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
         Route::get('/dashboard', [SiswaController::class, 'dashboard'])->name('dashboard');
         Route::get('/api/status-saya', [SiswaController::class, 'getMyStatus'])->name('api.status_saya');
-        Route::get('/riwayat-absensi', [SiswaController::class, 'riwayatAbsensi'])->name('riwayat.absensi');
-    });
-    
-    // Public API routes for reporting
-    Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
-        Route::get('/reports/attendance', [ReportController::class, 'attendanceReport'])->name('reports.attendance');
-        Route::get('/reports/cash', [ReportController::class, 'cashReport'])->name('reports.cash');
-        Route::get('/reports/summary', [ReportController::class, 'summaryReport'])->name('reports.summary');
     });
 });

@@ -1,11 +1,9 @@
-@extends('layouts.app')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="container mx-auto px-4 py-8">
     <!-- Header -->
     <div class="mb-8 text-center">
         <h1 class="text-3xl font-bold text-gray-800 mb-2">Manajemen Kas Digital</h1>
-        <p class="text-gray-600">{{ \Carbon\Carbon::now()->locale('id')->format('F Y') }}</p>
+        <p class="text-gray-600"><?php echo e(\Carbon\Carbon::now()->locale('id')->format('F Y')); ?></p>
     </div>
 
     <!-- Summary Cards -->
@@ -14,7 +12,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-green-600">Kas Masuk</p>
-                    <p class="text-2xl font-bold text-green-700">Rp {{ number_format($totalIncome, 0, ',', '.') }}</p>
+                    <p class="text-2xl font-bold text-green-700">Rp <?php echo e(number_format($totalIncome, 0, ',', '.')); ?></p>
                 </div>
                 <div class="bg-green-100 rounded-full p-3">
                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -28,7 +26,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-red-600">Kas Keluar</p>
-                    <p class="text-2xl font-bold text-red-700">Rp {{ number_format($totalExpense, 0, ',', '.') }}</p>
+                    <p class="text-2xl font-bold text-red-700">Rp <?php echo e(number_format($totalExpense, 0, ',', '.')); ?></p>
                 </div>
                 <div class="bg-red-100 rounded-full p-3">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,7 +40,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-blue-600">Saldo Akhir</p>
-                    <p class="text-2xl font-bold text-blue-700">Rp {{ number_format($balance, 0, ',', '.') }}</p>
+                    <p class="text-2xl font-bold text-blue-700">Rp <?php echo e(number_format($balance, 0, ',', '.')); ?></p>
                 </div>
                 <div class="bg-blue-100 rounded-full p-3">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,9 +142,9 @@
                     <select id="student_id" name="student_id" 
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">-- Pilih Siswa --</option>
-                        @foreach($students as $student)
-                            <option value="{{ $student->id }}">{{ $student->name }}</option>
-                        @endforeach
+                        <?php $__currentLoopData = $students; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $student): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($student->id); ?>"><?php echo e($student->name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                 </div>
                 
@@ -161,7 +159,7 @@
                     <label for="date" class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
                     <input type="date" id="date" name="date" required
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                           value="{{ now()->format('Y-m-d') }}">
+                           value="<?php echo e(now()->format('Y-m-d')); ?>">
                 </div>
                 
                 <div class="flex gap-3">
@@ -196,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function loadTransactions() {
         showLoading();
-        fetch('{{ route("bendahara.api.transactions") }}')
+        fetch('<?php echo e(route("bendahara.api.transactions")); ?>')
             .then(response => response.json())
             .then(data => {
                 transactions = data.transactions;
@@ -317,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(event.target);
         const data = Object.fromEntries(formData);
         
-        fetch('{{ route("bendahara.kas.store") }}', {
+        fetch('<?php echo e(route("bendahara.kas.store")); ?>', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -394,4 +392,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\projectsc\resources\views/bendahara/simple-cash.blade.php ENDPATH**/ ?>

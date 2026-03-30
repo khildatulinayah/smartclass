@@ -3,16 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         // Create default users
@@ -45,19 +39,15 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($students as $student) {
-            $user = User::create([
+            User::create([
                 'name' => $student['name'],
                 'email' => $student['email'],
                 'password' => bcrypt('password'),
                 'role' => 'siswa',
             ]);
-
-            // Create student record
-            $user->student()->create([
-                'name' => $student['name'],
-                'nis' => 'NIS' . rand(1000, 9999),
-                'class' => 'Kelas 1',
-            ]);
         }
+
+        // Generate weekly payments
+        $this->call(WeeklyPaymentSeeder::class);
     }
 }

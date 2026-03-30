@@ -125,4 +125,24 @@ class AdminController extends Controller
         $students = User::where('role', 'siswa')->get();
         return view('admin.students', compact('students'));
     }
+
+    public function reports(Request $request)
+    {
+        $type = $request->get('type', 'attendance');
+        
+        if ($type === 'attendance') {
+            $attendances = Attendance::with('user')
+                ->orderBy('date', 'desc')
+                ->paginate(50);
+            return view('admin.reports.attendance', compact('attendances'));
+        } elseif ($type === 'financial') {
+            $transactions = Transaction::with('user')
+                ->orderBy('date', 'desc')
+                ->paginate(50);
+            return view('admin.reports.financial', compact('transactions'));
+        }
+        
+        // Default view showing all report types
+        return view('admin.reports.index');
+    }
 }

@@ -13,17 +13,10 @@
         <div class="p-6">
             <div class="text-center">
                 <div class="text-4xl mb-2">
-                    @if($statusHariIni == 'hadir')
-                        ✅
-                    @elseif($statusHariIni == 'sakit')
-                        🤒
-                    @elseif($statusHariIni == 'izin')
-                        📝
-                    @elseif($statusHariIni == 'alpha')
-                        ❌
-                    @else
-                        ⏳
-                    @endif
+                    {{ $statusHariIni == 'hadir' ? '✅' : 
+                       ($statusHariIni == 'sakit' ? '🤒' : 
+                       ($statusHariIni == 'izin' ? '📝' : 
+                       ($statusHariIni == 'alpha' ? '❌' : '⏳')) }}
                 </div>
                 <div class="text-lg font-semibold mb-2">
                     {{ ucfirst($statusHariIni) }}
@@ -69,7 +62,7 @@
         <div class="bg-white rounded-lg shadow">
             <div class="p-4 border-b">
                 <h2 class="text-lg font-semibold">Pembayaran Kas</h2>
-                <p class="text-sm text-gray-600">{{ \Carbon\Carbon::create($currentYear, $currentMonth)->locale('id')->format('F Y') }}</p>
+                <p class="text-sm text-gray-600">Maret 2026</p>
             </div>
             <div class="p-6">
                 <div class="mb-4">
@@ -111,6 +104,74 @@
                             </div>
                         </div>
                     @endfor
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Records -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Recent Attendance -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold">Riwayat Absensi Terbaru</h2>
+            </div>
+            <div class="p-4">
+                <div class="space-y-2">
+                    @forelse($attendances->take(5) as $attendance)
+                        <div class="flex justify-between items-center py-2 border-b">
+                            <div>
+                                <div class="font-medium text-sm">{{ \Carbon\Carbon::parse($attendance->date)->format('d M Y') }}</div>
+                                <div class="text-xs text-gray-600">
+                                    {{ $attendance->attendance_time ? 'Jam: ' . \Carbon\Carbon::parse($attendance->attendance_time)->format('H:i') : 'Tidak ada jam' }}
+                                </div>
+                            </div>
+                            <div class="px-2 py-1 rounded text-xs font-medium
+                                {{ $attendance->status == 'hadir' ? 'bg-green-100 text-green-700' : 
+                                   ($attendance->status == 'sakit' ? 'bg-yellow-100 text-yellow-700' : 
+                                   ($attendance->status == 'izin' ? 'bg-blue-100 text-blue-700' : 
+                                   ($attendance->status == 'alpha' ? 'bg-red-100 text-red-700' : 
+                                   'bg-gray-100 text-gray-700')) }}">
+                                {{ ucfirst($attendance->status) }}
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center text-gray-500 py-4">
+                            Belum ada riwayat absensi
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold">Riwayat Kas Terbaru</h2>
+            </div>
+            <div class="p-4">
+                <div class="space-y-2">
+                    @forelse($transactions->take(5) as $transaction)
+                        <div class="flex justify-between items-center py-2 border-b">
+                            <div>
+                                <div class="font-medium text-sm">{{ $transaction->description }}</div>
+                                <div class="text-xs text-gray-600">{{ \Carbon\Carbon::parse($transaction->date)->format('d M Y') }}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-semibold text-sm
+                                    {{ $transaction->type == 'income' ? 'text-green-600' : 'text-red-600' }}">
+                                    {{ $transaction->type == 'income' ? '+' : '-' }} Rp {{ number_format($transaction->amount, 0, ',', '.') }}
+                                </div>
+                                <div class="text-xs text-gray-600">
+                                    {{ $transaction->type == 'income' ? 'Pemasukan' : 'Pengeluaran' }}
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center text-gray-500 py-4">
+                            Belum ada riwayat transaksi
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </div>
