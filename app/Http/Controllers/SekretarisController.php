@@ -189,7 +189,7 @@ class SekretarisController extends Controller
 
         // 🔥 kalau belum pilih bulan → tampilkan halaman filter dulu
         if (!$bulan || !$tahun) {
-            return view('sekretaris.laporan-filter');
+            return view('sekretaris.laporan-filter', compact('bulan', 'tahun'));
         }
 
         // 🔥 kalau sudah pilih → baru generate laporan
@@ -248,6 +248,10 @@ class SekretarisController extends Controller
             ->get()
             ->groupBy('student_id');
 
+        // Debug: Tampilkan jumlah data absensi yang ditemukan
+        \Log::info("Total attendance records for $bulan-$tahun: " . $attendances->count());
+        \Log::info("Total students: " . $students->count());
+
         $jumlahHari = \Carbon\Carbon::create($tahun, $bulan)->daysInMonth;
 
         $laporan = [];
@@ -255,11 +259,19 @@ class SekretarisController extends Controller
         foreach ($students as $student) {
             $dataPerHari = [];
             $dataAbsensi = $attendances[$student->id] ?? collect();
+            
+            // Debug: Log untuk setiap siswa
+            \Log::info("Student: {$student->name} (ID: {$student->id}), Attendance count: {$dataAbsensi->count()}");
 
             for ($i = 1; $i <= $jumlahHari; $i++) {
                 $tanggal = \Carbon\Carbon::create($tahun, $bulan, $i)->toDateString();
                 $absen = $dataAbsensi->firstWhere('date', $tanggal);
                 $dataPerHari[$i] = $absen ? $absen->status : '-';
+                
+                // Debug: Log jika ada data absensi
+                if ($absen) {
+                    \Log::info("Found attendance for {$student->name} on {$tanggal}: {$absen->status}");
+                }
             }
 
             $total = [
@@ -276,13 +288,13 @@ class SekretarisController extends Controller
             ];
         }
 
-        $pdf = Pdf::loadView('sekretaris.laporan', compact(
+        $pdf = Pdf::loadView('sekretaris.laporan-cetak', compact(
             'laporan',
             'bulan',
             'tahun',
             'jumlahHari'
-        ))->setPaper('a4', 'landscape');
+        ))->setPaper('a3', 'landscape');
 
-        return $pdf->download("laporan-absensi-$bulan-$tahun.pdf");
+        return $pdf->stream("laporan-absensi-$bulan-$tahun.pdf");
     }
 }

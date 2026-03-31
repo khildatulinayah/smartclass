@@ -66,7 +66,7 @@
                             </div>
                             <?php if(!$isPaid): ?>
                                 <button class="pixel-button px-2 py-1 bg-blue-400 text-black text-xs mt-2" 
-                                        onclick="showPaymentModal(<?php echo e($payment->id); ?>, '<?php echo e($payments->first()->student->name); ?>', <?php echo e($week); ?>)">
+                                        onclick="showPaymentModal(<?php echo e($payment->id); ?>, '<?php echo e($payments->first()->student->name); ?>', <?php echo e($week); ?>, <?php echo e($payments->first()->student->id); ?>)">
                                     BAYAR
                                 </button>
                             <?php endif; ?>
@@ -320,11 +320,12 @@ function processPayment(paymentId) {
 
 <script>
 // Simple modal functions
-function showPaymentModal(paymentId, studentName, week) {
-    console.log('Opening modal for:', paymentId, studentName, week);
+function showPaymentModal(paymentId, studentName, week, studentId) {
+    console.log('Opening modal for:', paymentId, studentName, week, studentId);
     
     // Set form values
     document.getElementById('payment_id').value = paymentId;
+    document.getElementById('payment_id').dataset.studentId = studentId;
     document.getElementById('student_name').textContent = studentName;
     document.getElementById('week_number').textContent = week;
     document.getElementById('payment_date').value = '2026-03-19'; // Fixed date for testing
@@ -361,8 +362,8 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
     
     console.log('Form data:', {paymentId, paymentDate, description});
     
-    // Use hardcoded student_id for testing
-    const studentId = 1; // Assuming admin has ID 1
+    // Get student_id from the payment data
+    const studentId = document.getElementById('payment_id').dataset.studentId || 1;
     
     // Show loading
     const submitBtn = this.querySelector('button[type="submit"]');
@@ -444,35 +445,6 @@ document.getElementById('paymentModal').addEventListener('click', function(e) {
     }
 });
 
-// Test function - remove auto test
-function testModal() {
-    console.log('Manual test - clicking first unpaid payment button');
-    const firstButton = document.querySelector('button[onclick*="showPaymentModal"]');
-    if (firstButton) {
-        firstButton.click();
-    } else {
-        console.log('No payment buttons found');
-    }
-}
-
-// Page load check
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded');
-    
-    // Check if modal exists
-    const modal = document.getElementById('paymentModal');
-    console.log('Modal element:', modal);
-    
-    // Check if buttons exist
-    const buttons = document.querySelectorAll('button[onclick*="showPaymentModal"]');
-    console.log('Payment buttons found:', buttons.length);
-    
-    // Test first button after 2 seconds
-    setTimeout(() => {
-        console.log('Testing first button...');
-        testModal();
-    }, 2000);
-});
 
 // Arrears List Modal Functions
 function showArrearsList() {

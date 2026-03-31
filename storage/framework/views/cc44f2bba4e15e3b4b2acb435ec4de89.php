@@ -1,0 +1,93 @@
+<?php $__env->startSection('content'); ?>
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Absensi Harian</h1>
+    <p class="text-gray-600 mb-6"><?php echo e(\Carbon\Carbon::now()->locale('id')->format('l, d F Y')); ?></p>
+
+    <?php if(session('success')): ?>
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+            <?php echo e(session('success')); ?>
+
+        </div>
+    <?php endif; ?>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-green-100 p-4 rounded text-center">
+            <div class="text-2xl font-bold text-green-700"><?php echo e($attendances->where('status', 'hadir')->count()); ?></div>
+            <div class="text-sm text-green-600">Hadir</div>
+        </div>
+        <div class="bg-yellow-100 p-4 rounded text-center">
+            <div class="text-2xl font-bold text-yellow-700"><?php echo e($attendances->where('status', 'sakit')->count()); ?></div>
+            <div class="text-sm text-yellow-600">Sakit</div>
+        </div>
+        <div class="bg-blue-100 p-4 rounded text-center">
+            <div class="text-2xl font-bold text-blue-700"><?php echo e($attendances->where('status', 'izin')->count()); ?></div>
+            <div class="text-sm text-blue-600">Izin</div>
+        </div>
+        <div class="bg-red-100 p-4 rounded text-center">
+            <div class="text-2xl font-bold text-red-700"><?php echo e($attendances->where('status', 'alpha')->count()); ?></div>
+            <div class="text-sm text-red-600">Alpha</div>
+        </div>
+    </div>
+
+    <!-- Attendance Form -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-4 border-b">
+            <h2 class="text-lg font-semibold">Update Absensi</h2>
+        </div>
+        
+        <form action="<?php echo e(route('sekretaris.absensi.update')); ?>" method="POST" class="p-4">
+            <?php echo csrf_field(); ?>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-2 text-left">Nama Siswa</th>
+                            <th class="px-4 py-2 text-center">Status</th>
+                            <th class="px-4 py-2 text-center">Jam</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $__currentLoopData = $students; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $student): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php
+                                $attendance = $attendances->get($student->id);
+                                $status = $attendance ? $attendance->status : 'belum_absen';
+                                $time = $attendance ? $attendance->attendance_time : '-';
+                            ?>
+                            <tr class="border-b">
+                                <td class="px-4 py-3 font-medium"><?php echo e($student->name); ?></td>
+                                <td class="px-4 py-3">
+                                    <select name="status[<?php echo e($student->id); ?>]" 
+                                            class="w-full px-3 py-1 border rounded
+                                                   <?php echo e($status == 'hadir' ? 'bg-green-100' : 
+                                                      ($status == 'sakit' ? 'bg-yellow-100' : 
+                                                      ($status == 'izin' ? 'bg-blue-100' : 
+                                                      ($status == 'alpha' ? 'bg-red-100' : 'bg-gray-100')))); ?>">
+                                        <option value="belum_absen" <?php echo e($status == 'belum_absen' ? 'selected' : ''); ?>>Belum Absen</option>
+                                        <option value="hadir" <?php echo e($status == 'hadir' ? 'selected' : ''); ?>>Hadir</option>
+                                        <option value="sakit" <?php echo e($status == 'sakit' ? 'selected' : ''); ?>>Sakit</option>
+                                        <option value="izin" <?php echo e($status == 'izin' ? 'selected' : ''); ?>>Izin</option>
+                                        <option value="alpha" <?php echo e($status == 'alpha' ? 'selected' : ''); ?>>Alpha</option>
+                                    </select>
+                                </td>
+                                <td class="px-4 py-3 text-center text-sm text-gray-600">
+                                    <?php echo e($time != '-' ? \Carbon\Carbon::parse($time)->format('H:i') : '-'); ?>
+
+                                </td>
+                            </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                    Update Absensi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\projectsc\resources\views/sekretaris/absensi.blade.php ENDPATH**/ ?>

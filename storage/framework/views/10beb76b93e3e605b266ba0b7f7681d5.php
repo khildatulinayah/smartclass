@@ -1,64 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Laporan Absensi</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-        }
-        .text-center {
-            text-align: center;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 10px;
-        }
-        table, th, td {
-            border: 1px solid black;
-        }
-        th, td {
-            padding: 4px;
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .nama {
-            text-align: left;
-            padding-left: 8px;
-        }
-        .btn {
-            padding: 6px 12px;
-            text-decoration: none;
-            margin-right: 10px;
-            border-radius: 4px;
-        }
-        .btn-back {
-            background: #ccc;
-            color: black;
-        }
-        .btn-print {
-            background: black;
-            color: white;
-        }
-    </style>
-</head>
-<body>
 
-    
-    <div style="margin-bottom: 15px;">
-        <a href="<?php echo e(route('sekretaris.laporan')); ?>" class="btn btn-back">
+
+<?php $__env->startSection('content'); ?>
+
+<div class="bg-white p-6 rounded-lg shadow-md">
+
+    <div class="mb-4 flex gap-4">
+        <a href="<?php echo e(route('sekretaris.laporan')); ?>" 
+           class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
             ← Kembali
         </a>
 
-        <a href="<?php echo e(route('sekretaris.laporan.cetak', ['bulan'=>$bulan, 'tahun'=>$tahun])); ?>" class="btn btn-print">
-            🖨️ Download PDF
-    </a>
+        <a href="<?php echo e(route('sekretaris.laporan.cetak', ['bulan'=>$bulan, 'tahun'=>$tahun])); ?>" 
+           target="_blank"
+           class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
+            Cetak PDF
+        </a>
     </div>
 
-    
     <?php
         $namaBulan = [
             1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',
@@ -67,71 +25,73 @@
         ];
     ?>
 
-    
-    <div class="text-center">
-        <h2>LAPORAN ABSENSI SISWA</h2>
-        <p>Bulan: <?php echo e($namaBulan[$bulan]); ?> <?php echo e($tahun); ?></p>
+    <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold">Laporan Absensi</h2>
+        <p class="text-gray-600">
+            <?php echo e($namaBulan[$bulan]); ?> <?php echo e($tahun); ?>
+
+        </p>
     </div>
 
-    
-    <table>
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Nama</th>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-gray-300">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="border border-gray-300 px-4 py-2">No</th>
+                    <th class="border border-gray-300 px-4 py-2">Nama</th>
 
-                
-                <?php for($i = 1; $i <= $jumlahHari; $i++): ?>
-                    <th><?php echo e($i); ?></th>
-                <?php endfor; ?>
-
-                <th>H</th>
-                <th>S</th>
-                <th>I</th>
-                <th>A</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            <?php $__currentLoopData = $laporan; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $row): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <tr>
-                    <td><?php echo e($index + 1); ?></td>
-                    <td class="nama"><?php echo e($row['nama']); ?></td>
-
-                    
                     <?php for($i = 1; $i <= $jumlahHari; $i++): ?>
-                        <?php
-                            $status = $row['hari'][$i];
-                        ?>
-
-                        <td>
-                            <?php if($status == 'hadir'): ?> H
-                            <?php elseif($status == 'sakit'): ?> S
-                            <?php elseif($status == 'izin'): ?> I
-                            <?php elseif($status == 'alpha'): ?> A
-                            <?php else: ?> -
-                            <?php endif; ?>
-                        </td>
+                        <th class="border border-gray-300 px-2 py-2"><?php echo e($i); ?></th>
                     <?php endfor; ?>
 
-                    
-                    <td><?php echo e($row['total']['hadir']); ?></td>
-                    <td><?php echo e($row['total']['sakit']); ?></td>
-                    <td><?php echo e($row['total']['izin']); ?></td>
-                    <td><?php echo e($row['total']['alpha']); ?></td>
+                    <th class="border border-gray-300 px-4 py-2">H</th>
+                    <th class="border border-gray-300 px-4 py-2">S</th>
+                    <th class="border border-gray-300 px-4 py-2">I</th>
+                    <th class="border border-gray-300 px-4 py-2">A</th>
                 </tr>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-        </tbody>
-    </table>
+            </thead>
 
-    <br><br>
+            <tbody>
+                <?php $__currentLoopData = $laporan; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $row): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <tr>
+                        <td class="border border-gray-300 px-4 py-2"><?php echo e($index + 1); ?></td>
+                        <td class="border border-gray-300 px-4 py-2 font-semibold"><?php echo e($row['nama']); ?></td>
 
-    
-    <div style="width: 200px; float: right; text-align: center;">
-        <p>Mengetahui,</p>
-        <br><br><br>
-        <p><b>Sekretaris</b></p>
+                        <?php for($i = 1; $i <= $jumlahHari; $i++): ?>
+                            <?php $status = $row['hari'][$i]; ?>
+
+                            <td class="border border-gray-300 px-2 py-2 text-center">
+                                <?php if($status == 'hadir'): ?> 
+                                    <span class="text-green-600">H</span>
+                                <?php elseif($status == 'sakit'): ?> 
+                                    <span class="text-yellow-600">S</span>
+                                <?php elseif($status == 'izin'): ?> 
+                                    <span class="text-blue-600">I</span>
+                                <?php elseif($status == 'alpha'): ?> 
+                                    <span class="text-red-600">A</span>
+                                <?php else: ?> 
+                                    -
+                                <?php endif; ?>
+                            </td>
+                        <?php endfor; ?>
+
+                        <td class="border border-gray-300 px-4 py-2 text-center"><?php echo e($row['total']['hadir']); ?></td>
+                        <td class="border border-gray-300 px-4 py-2 text-center"><?php echo e($row['total']['sakit']); ?></td>
+                        <td class="border border-gray-300 px-4 py-2 text-center"><?php echo e($row['total']['izin']); ?></td>
+                        <td class="border border-gray-300 px-4 py-2 text-center"><?php echo e($row['total']['alpha']); ?></td>
+                    </tr>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </tbody>
+        </table>
     </div>
 
-</body>
-</html><?php /**PATH C:\laragon\www\projectsc\resources\views/sekretaris/laporan.blade.php ENDPATH**/ ?>
+    <div class="mt-8 text-right">
+        <p class="text-sm text-gray-600">Mengetahui,</p>
+        <br><br>
+        <p class="text-sm font-semibold">Sekretaris</p>
+    </div>
+
+</div>
+
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\projectsc\resources\views/sekretaris/laporan.blade.php ENDPATH**/ ?>

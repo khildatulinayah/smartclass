@@ -110,6 +110,21 @@
 </div>
 
 <script>
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+
+function formatTime(timeString) {
+    if (!timeString) return '-';
+    // Format HH:MM:SS menjadi HH:MM
+    return timeString.substring(0, 5);
+}
+
 function showDetail(studentId) {
     const modal = document.getElementById('detailModal');
     const modalTitle = document.getElementById('modalTitle');
@@ -140,9 +155,9 @@ function showDetail(studentId) {
                 };
                 
                 html += `<tr>
-                    <td class="px-4 py-2">${attendance.date}</td>
+                    <td class="px-4 py-2">${formatDate(attendance.date)}</td>
                     <td class="px-4 py-2">${statusBadge[attendance.status] || statusBadge['belum_absen']}</td>
-                    <td class="px-4 py-2">${attendance.attendance_time || '-'}</td>
+                    <td class="px-4 py-2">${formatTime(attendance.attendance_time)}</td>
                 </tr>`;
             });
             

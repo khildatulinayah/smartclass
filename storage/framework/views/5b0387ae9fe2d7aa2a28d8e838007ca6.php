@@ -1,9 +1,7 @@
-@extends('layouts.app')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl text-center font-bold mb-6">Dashboard Siswa</h1>
-    <p class="bg-white rounded-lg shadow mb-8 text-blue-600 mb-8 text-2xl font-semibold">Selamat datang, {{ auth()->user()->name }}!</p>
+    <p class="bg-white rounded-lg shadow mb-8 text-blue-600 mb-8 text-2xl font-semibold">Selamat datang, <?php echo e(auth()->user()->name); ?>!</p>
 
     <!-- Status Hari Ini -->
     <div class="bg-white rounded-lg shadow mb-8">
@@ -13,23 +11,25 @@
         <div class="p-6">
             <div class="text-center">
                 <div class="text-4xl mb-2">
-                    @if($statusHariIni == 'hadir')
+                    <?php if($statusHariIni == 'hadir'): ?>
                         ✅
-                    @elseif($statusHariIni == 'sakit')
+                    <?php elseif($statusHariIni == 'sakit'): ?>
                         🤒
-                    @elseif($statusHariIni == 'izin')
+                    <?php elseif($statusHariIni == 'izin'): ?>
                         📝
-                    @elseif($statusHariIni == 'alpha')
+                    <?php elseif($statusHariIni == 'alpha'): ?>
                         ❌
-                    @else
+                    <?php else: ?>
                         ⏳
-                    @endif
+                    <?php endif; ?>
                 </div>
                 <div class="text-lg font-semibold mb-2">
-                    {{ ucfirst($statusHariIni) }}
+                    <?php echo e(ucfirst($statusHariIni)); ?>
+
                 </div>
                 <div class="text-sm text-gray-600">
-                    {{ \Carbon\Carbon::now()->locale('id')->format('l, d F Y') }}
+                    <?php echo e(\Carbon\Carbon::now()->locale('id')->format('l, d F Y')); ?>
+
                 </div>
             </div>
         </div>
@@ -41,24 +41,24 @@
         <div class="bg-white rounded-lg shadow">
             <div class="p-4 border-b">
                 <h2 class="text-lg font-semibold">Absensi Bulanan</h2>
-                <p class="text-sm text-gray-600">{{ \Carbon\Carbon::now()->locale('id')->format('F Y') }}</p>
+                <p class="text-sm text-gray-600"><?php echo e(\Carbon\Carbon::now()->locale('id')->format('F Y')); ?></p>
             </div>
             <div class="p-6">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-green-600">{{ $totalHadir }}</div>
+                        <div class="text-2xl font-bold text-green-600"><?php echo e($totalHadir); ?></div>
                         <div class="text-sm text-gray-600">Hadir</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-yellow-600">{{ $totalSakit }}</div>
+                        <div class="text-2xl font-bold text-yellow-600"><?php echo e($totalSakit); ?></div>
                         <div class="text-sm text-gray-600">Sakit</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-blue-600">{{ $totalIzin }}</div>
+                        <div class="text-2xl font-bold text-blue-600"><?php echo e($totalIzin); ?></div>
                         <div class="text-sm text-gray-600">Izin</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-red-600">{{ $totalAlpha }}</div>
+                        <div class="text-2xl font-bold text-red-600"><?php echo e($totalAlpha); ?></div>
                         <div class="text-sm text-gray-600">Alpha</div>
                     </div>
                 </div>
@@ -69,48 +69,50 @@
         <div class="bg-white rounded-lg shadow">
             <div class="p-4 border-b">
                 <h2 class="text-lg font-semibold">Pembayaran Kas</h2>
-                <p class="text-sm text-gray-600">{{ \Carbon\Carbon::create($currentYear, $currentMonth)->locale('id')->format('F Y') }}</p>
+                <p class="text-sm text-gray-600"><?php echo e(\Carbon\Carbon::create($currentYear, $currentMonth)->locale('id')->format('F Y')); ?></p>
             </div>
             <div class="p-6">
                 <div class="mb-4">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-sm font-medium">Status:</span>
                         <span class="px-3 py-1 rounded-full text-xs font-semibold
-                            {{ $statusKas == 'Lunas' ? 'bg-green-100 text-green-700' : 
+                            <?php echo e($statusKas == 'Lunas' ? 'bg-green-100 text-green-700' : 
                                ($statusKas == 'Belum Bayar' ? 'bg-red-100 text-red-700' : 
-                               'bg-yellow-100 text-yellow-700') }}">
-                            {{ $statusKas }}
+                               'bg-yellow-100 text-yellow-700')); ?>">
+                            <?php echo e($statusKas); ?>
+
                         </span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full" style="width: {{ ($paidWeeks / $totalWeeks) * 100 }}%"></div>
+                        <div class="bg-green-500 h-2 rounded-full" style="width: <?php echo e(($paidWeeks / $totalWeeks) * 100); ?>%"></div>
                     </div>
                     <div class="text-center text-sm text-gray-600 mt-1">
-                        {{ $paidWeeks }} dari {{ $totalWeeks }} minggu
+                        <?php echo e($paidWeeks); ?> dari <?php echo e($totalWeeks); ?> minggu
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-3">
-                    @for($week = 1; $week <= 4; $week++)
-                        @php
+                    <?php for($week = 1; $week <= 4; $week++): ?>
+                        <?php
                             $payment = $weeklyPayments->where('week_number', $week)->first();
                             $isPaid = $payment && $payment->status == 'paid';
-                        @endphp
+                        ?>
                         <div class="flex justify-between items-center p-3 rounded
-                            {{ $isPaid ? 'bg-green-50' : 'bg-red-50' }}">
+                            <?php echo e($isPaid ? 'bg-green-50' : 'bg-red-50'); ?>">
                             <div class="flex items-center">
-                                <span class="mr-3">{{ $isPaid ? '✅' : '❌' }}</span>
+                                <span class="mr-3"><?php echo e($isPaid ? '✅' : '❌'); ?></span>
                                 <div>
-                                    <div class="font-medium text-sm">Minggu {{ $week }}</div>
+                                    <div class="font-medium text-sm">Minggu <?php echo e($week); ?></div>
                                     <div class="text-xs text-gray-600">Rp 5.000</div>
                                 </div>
                             </div>
                             <div class="text-sm font-medium
-                                {{ $isPaid ? 'text-green-600' : 'text-red-600' }}">
-                                {{ $isPaid ? 'Lunas' : 'Belum' }}
+                                <?php echo e($isPaid ? 'text-green-600' : 'text-red-600'); ?>">
+                                <?php echo e($isPaid ? 'Lunas' : 'Belum'); ?>
+
                             </div>
                         </div>
-                    @endfor
+                    <?php endfor; ?>
                 </div>
             </div>
         </div>
@@ -125,7 +127,7 @@
                 </div>
                 <div>
                     <div class="text-sm text-gray-600">Total Hari Absen</div>
-                    <div class="text-xl font-bold">{{ $totalDays }}</div>
+                    <div class="text-xl font-bold"><?php echo e($totalDays); ?></div>
                 </div>
             </div>
         </div>
@@ -136,7 +138,7 @@
                 </div>
                 <div>
                     <div class="text-sm text-gray-600">Total Kas Bulanan</div>
-                    <div class="text-xl font-bold">Rp {{ number_format($totalKasBulanan, 0, ',', '.') }}</div>
+                    <div class="text-xl font-bold">Rp <?php echo e(number_format($totalKasBulanan, 0, ',', '.')); ?></div>
                 </div>
             </div>
         </div>
@@ -147,10 +149,12 @@
                 </div>
                 <div>
                     <div class="text-sm text-gray-600">Tunggakan Kas</div>
-                    <div class="text-xl font-bold text-red-600">Rp {{ number_format($kasTunggakan, 0, ',', '.') }}</div>
+                    <div class="text-xl font-bold text-red-600">Rp <?php echo e(number_format($kasTunggakan, 0, ',', '.')); ?></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\projectsc\resources\views/siswa/dashboard.blade.php ENDPATH**/ ?>

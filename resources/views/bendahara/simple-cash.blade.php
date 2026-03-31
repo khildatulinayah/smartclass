@@ -195,10 +195,14 @@ document.addEventListener('DOMContentLoaded', function() {
     loadTransactions();
     
     function loadTransactions() {
+        console.log('Loading transactions...');
         showLoading();
-        fetch('{{ route("bendahara.api.transactions") }}')
+        // Add cache-busting parameter
+        const timestamp = new Date().getTime();
+        fetch('{{ route("bendahara.api.transactions") }}?t=' + timestamp)
             .then(response => response.json())
             .then(data => {
+                console.log('Transactions loaded:', data);
                 transactions = data.transactions;
                 updateSummary(data.summary);
                 renderTransactions();
@@ -327,12 +331,16 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(result => {
+            console.log('Save transaction result:', result);
             if (result.success) {
                 closeTransactionModal();
-                loadTransactions();
+                // Add small delay to ensure database is updated
+                setTimeout(() => {
+                    loadTransactions();
+                }, 500);
                 showToast('Transaksi berhasil ditambahkan!');
             } else {
-                showToast('Gagal menambah transaksi', 'error');
+                showToast('Gagal menambah transaksi: ' + (result.message || 'Unknown error'), 'error');
             }
         })
         .catch(error => {

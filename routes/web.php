@@ -64,7 +64,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/weekly-payments', [BendaharaController::class, 'weeklyPayments'])->name('weekly.payments');
         Route::post('/process-payment', [BendaharaController::class, 'processWeeklyPayment'])->name('process.payment');
         Route::post('/api/process-arrears', [BendaharaController::class, 'processArrears'])->name('api.process_arrears');
-        Route::get('/laporan', [BendaharaController::class, 'financialReport'])->name('laporan');
     });
     
     // Sekretaris routes

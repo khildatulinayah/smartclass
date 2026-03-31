@@ -42,6 +42,16 @@ class BendaharaController extends Controller
                 'student_id' => 'nullable|exists:users,id'
             ]);
 
+            // Log untuk debugging
+            \Log::info('Creating transaction:', [
+                'student_id' => $request->student_id,
+                'type' => $request->type,
+                'amount' => $request->amount,
+                'description' => $request->description,
+                'date' => $request->date,
+                'created_by' => auth()->id()
+            ]);
+
             $transaction = Transaction::create([
                 'student_id' => $request->student_id,
                 'type' => $request->type,
@@ -51,12 +61,15 @@ class BendaharaController extends Controller
                 'created_by' => auth()->id()
             ]);
 
+            \Log::info('Transaction created successfully:', ['transaction_id' => $transaction->id]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Transaksi berhasil ditambahkan',
                 'transaction' => $transaction->load(['student', 'creator'])
             ]);
         } catch (\Exception $e) {
+            \Log::error('Error creating transaction: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
@@ -97,18 +110,6 @@ class BendaharaController extends Controller
     {
         $students = User::where('role', 'siswa')->orderBy('name')->get();
         return view('bendahara.student-list', compact('students'));
-    }
-
-    // Laporan Keuangan
-    public function financialReport()
-    {
-        $incomes = Transaction::where('type', 'income')->orderBy('date', 'desc')->get();
-        $expenses = Transaction::where('type', 'expense')->orderBy('date', 'desc')->get();
-        $totalIncome = $incomes->sum('amount');
-        $totalExpense = $expenses->sum('amount');
-        $balance = $totalIncome - $totalExpense;
-
-        return view('bendahara.financial_report', compact('incomes', 'expenses', 'totalIncome', 'totalExpense', 'balance'));
     }
 
     // Pembayaran Mingguan

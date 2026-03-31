@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-6">Dashboard Siswa</h1>
-    <p class="text-gray-600 mb-8">Selamat datang, {{ auth()->user()->name }}!</p>
+    <h1 class="text-3xl text-center font-bold mb-6">Dashboard Siswa</h1>
+    <p class="text-gray-600 mb-8 text-2xl">Selamat datang, {{ auth()->user()->name }}!</p>
 
     <!-- Status Hari Ini -->
     <div class="bg-white rounded-lg shadow mb-8">
