@@ -5,13 +5,32 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Transaction;
 use App\Models\WeeklyPayment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class BendaharaController extends Controller
 {
     public function dashboard()
     {
-        return view('bendahara.dashboard');
+        $today = Carbon::now();
+        $isFriday = $today->dayOfWeek === 4;
+        $currentWeek = $today->weekOfMonth;
+        $nextFriday = $today->copy()->next('friday')->format('d M Y');
+        
+        $currentMonth = $today->month;
+        $currentYear = $today->year;
+        
+        $payments = WeeklyPayment::where('month', $currentMonth)
+            ->where('year', $currentYear)
+            ->get();
+        $currentWeekUnpaid = $payments->where('week_number', $currentWeek)->where('status', 'unpaid')->count();
+        
+        return view('bendahara.dashboard', compact(
+            'isFriday', 
+            'currentWeek', 
+            'nextFriday', 
+            'currentWeekUnpaid'
+        ));
     }
 
     // Manajemen Kas Sederhana
@@ -113,22 +132,37 @@ class BendaharaController extends Controller
     }
 
     // Pembayaran Mingguan
-    public function weeklyPayments()
+    public function weeklyPayments(Request $request)
     {
-        $currentMonth = now()->month;
-        $currentYear = now()->year;
+        $month = $request->get('month', now()->month);
+        $year = $request->get('year', now()->year);
         
-        // Generate tagihan jika belum ada
-        $this->generateMonthlyBills($currentMonth, $currentYear);
+        $currentMonthDate = Carbon::create($year, $month);
+        $currentMonthName = $currentMonthDate->locale('id')->translatedFormat('F Y');
+        
+        // Prev/Next navigation
+        $prevMonth = ($month == 1) ? 12 : $month - 1;
+        $prevYear = ($month == 1) ? $year - 1 : $year;
+        $nextMonth = ($month == 12) ? 1 : $month + 1;
+        $nextYear = ($month == 12) ? $year + 1 : $year;
+        
+        // Always generate bills for the selected month (safe idempotent)
+        $this->generateMonthlyBills($month, $year);
         
         $payments = WeeklyPayment::with(['student', 'transaction'])
-            ->where('month', $currentMonth)
-            ->where('year', $currentYear)
+            ->where('month', $month)
+            ->where('year', $year)
             ->orderBy('week_number')
             ->orderBy('student_id')
             ->get();
         
         $paymentsByStudent = $payments->groupBy('student_id');
+        
+        $today = Carbon::now();
+        $isFriday = $today->dayOfWeek === 4; // 0=Senin, 4=Jumat
+        $currentWeek = $today->weekOfMonth;
+        $nextFriday = $today->copy()->next('friday')->format('d M Y');
+        $currentWeekUnpaid = $payments->where('week_number', $currentWeek)->where('status', 'unpaid')->count();
         
         $totalStudents = User::where('role', 'siswa')->count();
         $totalBills = $payments->count();
@@ -146,7 +180,18 @@ class BendaharaController extends Controller
             'unpaidBills',
             'totalAmount',
             'paidAmount',
-            'unpaidAmount'
+            'unpaidAmount',
+            'isFriday',
+            'currentWeek',
+            'nextFriday',
+            'currentWeekUnpaid',
+            'month',
+            'year',
+            'currentMonthName',
+            'prevMonth',
+            'prevYear',
+            'nextMonth',
+            'nextYear'
         ));
     }
 

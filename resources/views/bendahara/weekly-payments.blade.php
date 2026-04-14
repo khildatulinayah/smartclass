@@ -1,10 +1,24 @@
 @extends('layouts.app')
+<?php use Carbon\Carbon; ?>
 
 @section('title', 'Tracking Pembayaran Mingguan')
 
 @section('content')
 <div class="max-w-6xl mx-auto">
     <h2 class="pixel-font text-center text-yellow-400 mb-8" style="font-size: 20px; letter-spacing: 2px;">~ TRACKING PEMBAYARAN MINGGUAN ~</h2>
+    
+    <!-- Month Navigation -->
+    <div class="flex items-center justify-center mb-8 space-x-4 px-4">
+        <a href="?month={{ $prevMonth }}&year={{ $prevYear }}" class="pixel-button px-6 py-3 bg-gray-400 text-black hover:bg-gray-500 font-bold shadow-lg transform hover:scale-105 transition-all">
+            << Bulan Sebelumnya
+        </a>
+        <div class="pixel-font text-2xl md:text-3xl font-bold bg-blue-500 text-white px-12 py-6 border-6 border-black shadow-2xl rounded-lg">
+            {{ $currentMonthName }}
+        </div>
+        <a href="?month={{ $nextMonth }}&year={{ $nextYear }}" class="pixel-button px-6 py-3 bg-gray-400 text-black hover:bg-gray-500 font-bold shadow-lg transform hover:scale-105 transition-all">
+            Bulan Selanjutnya >>
+        </a>
+    </div>
     
     <!-- Statistik -->
     <div class="pixel-card p-4 mb-6 bg-blue-200">
@@ -25,6 +39,12 @@
                 <div class="pixel-font text-lg font-bold text-red-700">{{ $unpaidBills }}</div>
                 <div class="pixel-font text-xs">Belum Bayar</div>
             </div>
+            @if(isset($isFriday) && $isFriday)
+            <div>
+                <div class="pixel-font text-lg font-bold text-red-500 animate-pulse">{{ $currentWeekUnpaid }}</div>
+                <div class="pixel-font text-xs">Minggu Ini Belum</div>
+            </div>
+            @endif
             <div>
                 <div class="pixel-font text-lg font-bold">Rp {{ number_format($paidAmount, 0, ',', '.') }}</div>
                 <div class="pixel-font text-xs">Kas Masuk</div>
@@ -35,6 +55,19 @@
             </div>
         </div>
     </div>
+
+    {{-- Banner Dinamis Hari Jumat --}}
+    @if(isset($isFriday) && $isFriday)
+    <div class="pixel-card p-6 mb-6 bg-red-500 text-white text-center border-4 border-black shadow-2xl">
+        <h2 class="pixel-font text-2xl font-bold mb-2 animate-bounce">🚨 HARI JUMAT - PEMBAYARAN KAS!</h2>
+        <p class="text-lg">Prioritaskan <strong>{{ $currentWeekUnpaid }}</strong> siswa untuk Minggu ke-{{ $currentWeek }}</p>
+    </div>
+    @else
+    <div class="pixel-card p-6 mb-6 bg-yellow-400 text-black text-center border-4 border-black shadow-xl">
+        <h2 class="pixel-font text-xl font-bold mb-2">⏳ Selanjutnya: Hari Pembayaran</h2>
+        <p class="text-lg">Jumat, {{ $nextFriday ?? 'Minggu ini' }} | {{ $currentWeekUnpaid ?? 0 }} belum bayar minggu ini</p>
+    </div>
+    @endif
     
     <!-- Daftar Pembayaran per Siswa -->
     <div class="pixel-card p-6">
@@ -44,21 +77,22 @@
                 
                 <div class="grid grid-cols-4 gap-2">
                     @for($week = 1; $week <= 4; $week++)
-                        <?php 
+                        @php
                         $payment = $payments->where('week_number', $week)->first();
                         $isPaid = $payment && $payment->status === 'paid';
                         
-                        // Tanggal Rabu untuk setiap minggu di Maret 2026
-                        $wednesdayDates = [
-                            1 => '5 Mar 2026',
-                            2 => '12 Mar 2026', 
-                            3 => '19 Mar 2026',
-                            4 => '26 Mar 2026'
-                        ];
-                        ?>
-                        <div class="text-center p-2 {{ $isPaid ? 'bg-green-100 border-green-400' : 'bg-red-100 border-red-400' }} border-2">
-                            <div class="pixel-font text-xs">Minggu {{ $week }}</div>
-                            <div class="pixel-font text-xs text-gray-600">{{ $wednesdayDates[$week] }}</div>
+                        // Hitung tanggal Jumat untuk minggu ini
+                        $now = Carbon::now();
+                        $startOfMonth = Carbon::create($now->year, $now->month)->startOfMonth();
+                        $firstFriday = $startOfMonth->copy()->next(Carbon::FRIDAY);
+                        $weekFriday = $firstFriday->copy()->addWeeks($week - 1);
+                        $dateLabel = $weekFriday->locale('id')->isoFormat('D MMM YYYY');
+                        
+                        $highlightClass = (isset($isFriday) && $isFriday && $week == $currentWeek) ? 'ring-4 ring-red-500 bg-yellow-200 animate-pulse shadow-lg border-red-400' : '';
+                        @endphp
+                        <div class="text-center p-2 {{ $isPaid ? 'bg-green-100 border-green-400' : 'bg-red-100 border-red-400' }} {{ $highlightClass }} border-2 {{ $isPaid ? '' : 'hover:shadow-md transition-all' }}">
+                            <div class="pixel-font text-xs font-bold">Minggu {{ $week }}</div>
+                            <div class="pixel-font text-xs text-gray-600">Jumat, {{ $dateLabel }}</div>
                             <div class="pixel-font text-xs font-bold mt-1">
                                 @if($isPaid)
                                     <span class="text-green-700">✓ Rp 5.000</span>
@@ -66,11 +100,13 @@
                                     <span class="text-red-700">✗ Rp 5.000</span>
                                 @endif
                             </div>
-                            @if(!$isPaid)
-                                <button class="pixel-button px-2 py-1 bg-blue-400 text-black text-xs mt-2" 
-                                        onclick="showPaymentModal({{ $payment->id }}, '{{ $payments->first()->student->name }}', {{ $week }}, {{ $payments->first()->student->id }})">
-                                    BAYAR
+                            @if(!$isPaid && (!$isFriday || ($isFriday && $week == $currentWeek)))
+                                <button class="pixel-button px-2 py-1 {{ $isFriday && $week == $currentWeek ? 'bg-green-500 animate-pulse shadow-lg' : 'bg-blue-400' }} text-black text-xs mt-2 font-bold" 
+                                        onclick="showPaymentModal({{ $payment->id ?? '' }}, '{{ $payments->first()->student->name }}', {{ $week }}, {{ $payments->first()->student->id }})">
+                                    @if($isFriday && $week == $currentWeek) BAYAR SEKARANG @else BAYAR @endif
                                 </button>
+                            @elseif(!$isPaid)
+                                <div class="text-xs text-gray-500 italic mt-2 px-1 py-1 bg-gray-200 rounded">⏳ Tunggu Jumat</div>
                             @endif
                         </div>
                     @endfor
@@ -133,8 +169,17 @@
                         <div>
                             <h3 class="pixel-font text-sm font-bold">{{ $payments->first()->student->name }}</h3>
                             <p class="pixel-font text-xs text-gray-600">
-                                Menunggak {{ $unpaidPayments->count() }} minggu: 
-                                Minggu {{ implode(', ', $unpaidWeeks->toArray()) }}
+                                Menunggak {{ $unpaidPayments->count() }} minggu:<br>
+                                Minggu {{ implode(', ', $unpaidWeeks->toArray()) }} 
+                                @php
+                                $now = Carbon::now();
+                                $startOfMonth = Carbon::create($now->year, $now->month)->startOfMonth();
+                                $firstFriday = $startOfMonth->copy()->next(Carbon::FRIDAY);
+                                foreach($unpaidWeeks as $uw) {
+                                    $uwFriday = $firstFriday->copy()->addWeeks($uw - 1);
+                                    echo '(Jumat, ' . $uwFriday->locale('id')->isoFormat('D MMM') . ') ';
+                                }
+                                @endphp
                             </p>
                             <p class="pixel-font text-xs text-gray-500 mt-1">
                                 @if(in_array(3, $unpaidWeeks->toArray()))
@@ -327,8 +372,9 @@ function showPaymentModal(paymentId, studentName, week, studentId) {
     document.getElementById('payment_id').dataset.studentId = studentId;
     document.getElementById('student_name').textContent = studentName;
     document.getElementById('week_number').textContent = week;
-    document.getElementById('payment_date').value = '2026-03-19'; // Fixed date for testing
-    document.getElementById('description').value = `Pembayaran kas minggu ke-${week} Maret 2026`;
+    @php $jsDate = $weekFriday->toDateString(); $jsDesc = "Pembayaran kas Minggu $week - $dateLabel"; @endphp
+    document.getElementById('payment_date').value = '{{ $jsDate }}';
+    document.getElementById('description').value = `{{ addslashes($jsDesc) }}`;
     
     // Show modal
     const modal = document.getElementById('paymentModal');
