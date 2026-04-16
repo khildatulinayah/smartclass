@@ -57,15 +57,15 @@
     </div>
 
     
-    <?php if(isset($isFriday) && $isFriday): ?>
+<?php if(isset($isWednesday) && $isWednesday): ?>
     <div class="pixel-card p-6 mb-6 bg-red-500 text-white text-center border-4 border-black shadow-2xl">
-        <h2 class="pixel-font text-2xl font-bold mb-2 animate-bounce">🚨 HARI JUMAT - PEMBAYARAN KAS!</h2>
+        <h2 class="pixel-font text-2xl font-bold mb-2 animate-bounce">🚨 HARI RABU - PEMBAYARAN KAS!</h2>
         <p class="text-lg">Prioritaskan <strong><?php echo e($currentWeekUnpaid); ?></strong> siswa untuk Minggu ke-<?php echo e($currentWeek); ?></p>
     </div>
-    <?php else: ?>
+<?php else: ?>
     <div class="pixel-card p-6 mb-6 bg-yellow-400 text-black text-center border-4 border-black shadow-xl">
-        <h2 class="pixel-font text-xl font-bold mb-2">⏳ Selanjutnya: Hari Pembayaran</h2>
-        <p class="text-lg">Jumat, <?php echo e($nextFriday ?? 'Minggu ini'); ?> | <?php echo e($currentWeekUnpaid ?? 0); ?> belum bayar minggu ini</p>
+<h2 class="pixel-font text-xl font-bold mb-2">⏳ Selanjutnya: Hari Rabu</h2>
+<p class="text-lg">Rabu, <?php echo e($nextWednesday ?? 'Minggu ini'); ?> | <?php echo e($currentWeekUnpaid ?? 0); ?> belum bayar minggu ini</p>
     </div>
     <?php endif; ?>
     
@@ -77,22 +77,22 @@
                 
                 <div class="grid grid-cols-4 gap-2">
                     <?php for($week = 1; $week <= 4; $week++): ?>
-                        <?php
+<?php
                         $payment = $payments->where('week_number', $week)->first();
                         $isPaid = $payment && $payment->status === 'paid';
                         
-                        // Hitung tanggal Jumat untuk minggu ini
+                        // Hitung tanggal Rabu untuk minggu ini
                         $now = Carbon::now();
                         $startOfMonth = Carbon::create($now->year, $now->month)->startOfMonth();
-                        $firstFriday = $startOfMonth->copy()->next(Carbon::FRIDAY);
-                        $weekFriday = $firstFriday->copy()->addWeeks($week - 1);
-                        $dateLabel = $weekFriday->locale('id')->isoFormat('D MMM YYYY');
+                        $firstWednesday = $startOfMonth->copy()->next(Carbon::WEDNESDAY);
+                        $weekWednesday = $firstWednesday->copy()->addWeeks($week - 1);
+                        $dateLabel = $weekWednesday->locale('id')->isoFormat('D MMM YYYY');
                         
-                        $highlightClass = (isset($isFriday) && $isFriday && $week == $currentWeek) ? 'ring-4 ring-red-500 bg-yellow-200 animate-pulse shadow-lg border-red-400' : '';
+                        $highlightClass = (isset($isWednesday) && $isWednesday && $week == $currentWeek) ? 'ring-4 ring-red-500 bg-yellow-200 animate-pulse shadow-lg border-red-400' : '';
                         ?>
                         <div class="text-center p-2 <?php echo e($isPaid ? 'bg-green-100 border-green-400' : 'bg-red-100 border-red-400'); ?> <?php echo e($highlightClass); ?> border-2 <?php echo e($isPaid ? '' : 'hover:shadow-md transition-all'); ?>">
                             <div class="pixel-font text-xs font-bold">Minggu <?php echo e($week); ?></div>
-                            <div class="pixel-font text-xs text-gray-600">Jumat, <?php echo e($dateLabel); ?></div>
+<div class="pixel-font text-xs text-gray-600">Rabu, <?php echo e($dateLabel); ?></div>
                             <div class="pixel-font text-xs font-bold mt-1">
                                 <?php if($isPaid): ?>
                                     <span class="text-green-700">✓ Rp 5.000</span>
@@ -100,13 +100,11 @@
                                     <span class="text-red-700">✗ Rp 5.000</span>
                                 <?php endif; ?>
                             </div>
-                            <?php if(!$isPaid && (!$isFriday || ($isFriday && $week == $currentWeek))): ?>
-                                <button class="pixel-button px-2 py-1 <?php echo e($isFriday && $week == $currentWeek ? 'bg-green-500 animate-pulse shadow-lg' : 'bg-blue-400'); ?> text-black text-xs mt-2 font-bold" 
+                            <?php if(!$isPaid): ?>
+                                <button class="pixel-button px-2 py-1 <?php echo e(isset($isWednesday) && $isWednesday && $week == $currentWeek ? 'bg-green-500 animate-pulse shadow-lg' : 'bg-blue-400'); ?> text-black text-xs mt-2 font-bold" 
                                         onclick="showPaymentModal(<?php echo e($payment->id ?? ''); ?>, '<?php echo e($payments->first()->student->name); ?>', <?php echo e($week); ?>, <?php echo e($payments->first()->student->id); ?>)">
-                                    <?php if($isFriday && $week == $currentWeek): ?> BAYAR SEKARANG <?php else: ?> BAYAR <?php endif; ?>
+                                    BAYAR SEKARANG
                                 </button>
-                            <?php elseif(!$isPaid): ?>
-                                <div class="text-xs text-gray-500 italic mt-2 px-1 py-1 bg-gray-200 rounded">⏳ Tunggu Jumat</div>
                             <?php endif; ?>
                         </div>
                     <?php endfor; ?>
@@ -172,13 +170,13 @@
                             <p class="pixel-font text-xs text-gray-600">
                                 Menunggak <?php echo e($unpaidPayments->count()); ?> minggu:<br>
                                 Minggu <?php echo e(implode(', ', $unpaidWeeks->toArray())); ?> 
-                                <?php
+<?php
                                 $now = Carbon::now();
                                 $startOfMonth = Carbon::create($now->year, $now->month)->startOfMonth();
-                                $firstFriday = $startOfMonth->copy()->next(Carbon::FRIDAY);
+                                $firstWednesday = $startOfMonth->copy()->next(Carbon::WEDNESDAY);
                                 foreach($unpaidWeeks as $uw) {
-                                    $uwFriday = $firstFriday->copy()->addWeeks($uw - 1);
-                                    echo '(Jumat, ' . $uwFriday->locale('id')->isoFormat('D MMM') . ') ';
+                                    $uwWednesday = $firstWednesday->copy()->addWeeks($uw - 1);
+                                    echo '(Rabu, ' . $uwWednesday->locale('id')->isoFormat('D MMM') . ') ';
                                 }
                                 ?>
                             </p>
@@ -374,7 +372,7 @@ function showPaymentModal(paymentId, studentName, week, studentId) {
     document.getElementById('payment_id').dataset.studentId = studentId;
     document.getElementById('student_name').textContent = studentName;
     document.getElementById('week_number').textContent = week;
-    <?php $jsDate = $weekFriday->toDateString(); $jsDesc = "Pembayaran kas Minggu $week - $dateLabel"; ?>
+<?php $jsDate = $weekWednesday->toDateString(); $jsDesc = "Pembayaran kas Minggu $week - $dateLabel"; ?>
     document.getElementById('payment_date').value = '<?php echo e($jsDate); ?>';
     document.getElementById('description').value = `<?php echo e(addslashes($jsDesc)); ?>`;
     

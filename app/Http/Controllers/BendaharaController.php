@@ -7,15 +7,16 @@ use App\Models\Transaction;
 use App\Models\WeeklyPayment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class BendaharaController extends Controller
 {
     public function dashboard()
     {
         $today = Carbon::now();
-        $isFriday = $today->dayOfWeek === 4;
+        $isWednesday = $today->dayOfWeek === 3;
         $currentWeek = $today->weekOfMonth;
-        $nextFriday = $today->copy()->next('friday')->format('d M Y');
+        $nextWednesday = $today->copy()->next(Carbon::WEDNESDAY)->format('d M Y');
         
         $currentMonth = $today->month;
         $currentYear = $today->year;
@@ -26,9 +27,9 @@ class BendaharaController extends Controller
         $currentWeekUnpaid = $payments->where('week_number', $currentWeek)->where('status', 'unpaid')->count();
         
         return view('bendahara.dashboard', compact(
-            'isFriday', 
+            'isWednesday', 
             'currentWeek', 
-            'nextFriday', 
+            'nextWednesday', 
             'currentWeekUnpaid'
         ));
     }
@@ -62,7 +63,7 @@ class BendaharaController extends Controller
             ]);
 
             // Log untuk debugging
-            \Log::info('Creating transaction:', [
+            Log::info('Creating transaction:', [
                 'student_id' => $request->student_id,
                 'type' => $request->type,
                 'amount' => $request->amount,
@@ -80,7 +81,7 @@ class BendaharaController extends Controller
                 'created_by' => auth()->id()
             ]);
 
-            \Log::info('Transaction created successfully:', ['transaction_id' => $transaction->id]);
+            Log::info('Transaction created successfully:', ['transaction_id' => $transaction->id]);
 
             return response()->json([
                 'success' => true,
@@ -88,7 +89,7 @@ class BendaharaController extends Controller
                 'transaction' => $transaction->load(['student', 'creator'])
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error creating transaction: ' . $e->getMessage());
+            Log::error('Error creating transaction: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
@@ -159,9 +160,9 @@ class BendaharaController extends Controller
         $paymentsByStudent = $payments->groupBy('student_id');
         
         $today = Carbon::now();
-        $isFriday = $today->dayOfWeek === 4; // 0=Senin, 4=Jumat
+        $isWednesday = $today->dayOfWeek === 3; // 0=Senin, 3=Rabu
         $currentWeek = $today->weekOfMonth;
-        $nextFriday = $today->copy()->next('friday')->format('d M Y');
+        $nextWednesday = $today->copy()->next(Carbon::WEDNESDAY)->format('d M Y');
         $currentWeekUnpaid = $payments->where('week_number', $currentWeek)->where('status', 'unpaid')->count();
         
         $totalStudents = User::where('role', 'siswa')->count();
@@ -181,9 +182,9 @@ class BendaharaController extends Controller
             'totalAmount',
             'paidAmount',
             'unpaidAmount',
-            'isFriday',
+            'isWednesday',
             'currentWeek',
-            'nextFriday',
+            'nextWednesday',
             'currentWeekUnpaid',
             'month',
             'year',
@@ -282,3 +283,4 @@ class BendaharaController extends Controller
         }
     }
 }
+
