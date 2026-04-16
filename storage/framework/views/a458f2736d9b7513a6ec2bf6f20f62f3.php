@@ -1,0 +1,1 @@
+components.universal-dashboard<?php /**PATH C:\laragon\www\projectsc\storage\framework\views/925adc7623d88ed751db70922f963eb9.blade.php ENDPATH**/ ?>

@@ -7,6 +7,7 @@ use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Holiday;
 
 class SekretarisController extends Controller
 {
@@ -16,39 +17,58 @@ class SekretarisController extends Controller
     }
 
     // Absensi Harian (Simple Version)
-    public function simpleAttendance()
+    public function simpleAttendance(Request $request)
     {
-        $today = now()->toDateString();
+        $selectedDate = $request->input('date', now()->toDateString());
         $students = User::where('role', 'siswa')->orderBy('name')->get();
         
-        $attendances = Attendance::where('date', $today)->get()->keyBy('student_id');
+        $holiday = Holiday::where('date', $selectedDate)->first();
         
-        foreach ($students as $student) {
-            if (!$attendances->has($student->id)) {
-                $attendance = Attendance::create([
-                    'student_id' => $student->id,
-                    'date' => $today,
-                    'status' => 'belum_absen',
-                    'attendance_time' => null,
-                    'created_by' => auth()->id()
-                ]);
-                $attendances->put($student->id, $attendance);
+        if ($holiday) {
+            // Holiday date - no attendances needed
+            $attendances = collect();
+        } else {
+            $attendances = Attendance::where('date', $selectedDate)->get()->keyBy('student_id');
+            
+            foreach ($students as $student) {
+                if (!$attendances->has($student->id)) {
+                    $attendance = Attendance::create([
+                        'student_id' => $student->id,
+                        'date' => $selectedDate,
+                        'status' => 'belum_absen',
+                        'attendance_time' => null,
+                        'created_by' => auth()->id()
+                    ]);
+                    $attendances->put($student->id, $attendance);
+                }
             }
         }
         
-        return view('sekretaris.absensi', compact('students', 'attendances'));
+        return view('sekretaris.absensi', compact('students', 'attendances', 'selectedDate', 'holiday'));
     }
 
     public function batchUpdateAttendance(Request $request)
     {
-        $today = now()->toDateString();
+        $date = $request->input('date', now()->toDateString());
         $statuses = $request->input('status', []);
+        $holidayNote = $request->input('holiday_note');
+        
+        // Save holiday if provided
+        if ($holidayNote !== null) {
+            Holiday::updateOrCreate(
+                ['date' => $date],
+                [
+                    'note' => $holidayNote,
+                    'created_by' => auth()->id()
+                ]
+            );
+        }
         
         foreach ($statuses as $studentId => $status) {
             $attendance = Attendance::updateOrCreate(
                 [
                     'student_id' => $studentId,
-                    'date' => $today
+                    'date' => $date
                 ],
                 [
                     'status' => $status,
@@ -58,9 +78,18 @@ class SekretarisController extends Controller
             );
         }
         
-        return redirect()->route('sekretaris.absensi')
-            ->with('success', 'Absensi berhasil diperbarui!');
+        return redirect()->route('sekretaris.absensi', ['date' => $date])
+            ->with('success', 'Absensi dan keterangan libur berhasil disimpan!');
     }
+
+    public function deleteHoliday(Request $request)
+    {
+        $date = $request->input('date');
+        Holiday::where('date', $date)->delete();
+        return redirect()->route('sekretaris.absensi', ['date' => $date])
+            ->with('success', 'Keterangan libur dihapus!');
+    }
+
 
     public function quickUpdateAttendance(Request $request)
     {
@@ -169,6 +198,16 @@ class SekretarisController extends Controller
                                 ->whereYear('date', $year)
                                 ->orderBy('date')
                                 ->get();
+        
+        $holidays = Holiday::whereMonth('date', $month)
+                          ->whereYear('date', $year)
+                          ->pluck('note', 'date');
+        
+        foreach ($attendances as $attendance) {
+            if (isset($holidays[$attendance->date])) {
+                $attendance->holiday_note = $holidays[$attendance->date];
+            }
+        }
         
         return response()->json($attendances);
     }
