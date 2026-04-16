@@ -282,5 +282,43 @@ class BendaharaController extends Controller
             ], 500);
         }
     }
+
+    public function laporanPembayaran()
+    {
+        $months = [];
+        $now = Carbon::now();
+        for ($i = 0; $i < 12; $i++) {
+            $date = $now->copy()->subMonths($i);
+            $months[] = $date->month;
+        }
+        $years = [$now->year - 1, $now->year];
+
+        return view('bendahara.laporan-pembayaran', compact('months', 'years'));
+    }
+
+    public function laporanCetak(Request $request)
+    {
+        $request->validate([
+            'month' => 'required|integer|between:1,12',
+            'year' => 'required|integer|min:2020'
+        ]);
+
+        $month = $request->month;
+        $year = $request->year;
+
+        $payments = WeeklyPayment::with('student')
+            ->where('month', $month)
+            ->where('year', $year)
+            ->orderBy('student_id')
+            ->orderBy('week_number')
+            ->get();
+
+        $paymentsByStudent = $payments->groupBy('student_id');
+
+        $monthName = Carbon::create($year, $month)->locale('id')->translatedFormat('F Y');
+
+        return view('bendahara.laporan-pembayaran-cetak', compact('paymentsByStudent', 'month', 'year', 'monthName'));
+    }
 }
+
 

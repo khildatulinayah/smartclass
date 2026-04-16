@@ -64,6 +64,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/weekly-payments', [BendaharaController::class, 'weeklyPayments'])->name('weekly.payments');
         Route::post('/process-payment', [BendaharaController::class, 'processWeeklyPayment'])->name('process.payment');
         Route::post('/api/process-arrears', [BendaharaController::class, 'processArrears'])->name('api.process_arrears');
+        Route::get('/laporan-pembayaran', [BendaharaController::class, 'laporanPembayaran'])->name('laporan');
+        Route::post('/laporan-pembayaran/cetak', [BendaharaController::class, 'laporanCetak'])->name('laporan.cetak');
     });
     
     // Sekretaris routes

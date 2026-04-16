@@ -19,9 +19,9 @@
             <?php endif; ?>
         </a>
 
-        <a href="#" class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow block">
-            <h2 class="text-lg font-semibold mb-2">📈 Laporan Keuangan</h2>
-            <p class="text-gray-600">Laporan keuangan lengkap</p>
+        <a href="<?php echo e(route('bendahara.laporan')); ?>" class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow block">
+            <h2 class="text-lg font-semibold mb-2">📈 Laporan Pembayaran</h2>
+            <p class="text-gray-600">Laporan & cetak pembayaran mingguan</p>
         </a>
     </div>
 </div>
