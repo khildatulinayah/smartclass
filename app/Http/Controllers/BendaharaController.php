@@ -8,6 +8,7 @@ use App\Models\WeeklyPayment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BendaharaController extends Controller
 {
@@ -318,6 +319,33 @@ class BendaharaController extends Controller
         $monthName = Carbon::create($year, $month)->locale('id')->translatedFormat('F Y');
 
         return view('bendahara.laporan-pembayaran-cetak', compact('paymentsByStudent', 'month', 'year', 'monthName'));
+    }
+
+    public function laporanPdf(Request $request)
+    {
+        $request->validate([
+            'month' => 'required|integer|between:1,12',
+            'year' => 'required|integer|min:2020'
+        ]);
+
+        $month = $request->month;
+        $year = $request->year;
+
+        $payments = WeeklyPayment::with('student')
+            ->where('month', $month)
+            ->where('year', $year)
+            ->orderBy('student_id')
+            ->orderBy('week_number')
+            ->get();
+
+        $paymentsByStudent = $payments->groupBy('student_id');
+
+        $monthName = Carbon::create($year, $month)->locale('id')->translatedFormat('F Y');
+
+        $pdf = Pdf::loadView('bendahara.laporan-pembayaran-cetak', compact('paymentsByStudent', 'month', 'year', 'monthName'));
+        $pdf->setPaper('a4', 'portrait');
+
+return $pdf->stream('laporan-pembayaran-' . $monthName . '.pdf');
     }
 }
 

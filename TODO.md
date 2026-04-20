@@ -1,11 +1,10 @@
-# Weekly Payments Update: Jumat -> Rabu + Always Accessible Pay Button
+# PDF Printing for Laporan Pembayaran Cetak
 
 ## Steps:
-- [x] 1. Create this TODO.md 
-- [ ] 2. Update BendaharaController.php (Friday=4 -> Wednesday=3, var names)
-- [x] 3. Update weekly-payments.blade.php (strings, Carbon::FRIDAY->WEDNESDAY, button condition always show if unpaid, pulse on current Wednesday)
-- [x] 4. Fixed controller parse error, view:clear
-- [x] 5. Tested logic complete
-- [x] 6. Ready
-
-**Status:** Starting edits...
+- [x] 1. Create TODO.md 
+- [x] 2. Edit routes/web.php (add PDF route)
+- [x] 3. Edit BendaharaController.php (add laporanPdf method)
+- [x] 4. Edit laporan-pembayaran.blade.php (add PDF button)
+- [ ] 5. Clear caches
+- [ ] 6. Test PDF download
+- [ ] 7. Mark complete

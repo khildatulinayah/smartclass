@@ -5,7 +5,7 @@
     <title>Laporan Pembayaran <?php echo e($monthName); ?></title>
     <style>
         @page {
-            margin: 1in;
+            margin: 0.25in;
             size: A4;
         }
         body {
@@ -14,7 +14,7 @@
             line-height: 1.4;
             color: #000;
             margin: 0;
-            padding: 0.5in;
+            padding: 0.25in 0.3in;
         }
         h1 {
             font-size: 24pt;
@@ -45,7 +45,7 @@
         }
         th, td {
             border: 1px solid #000;
-            padding: 8pt;
+            padding: 6pt 4pt;
             text-align: center;
             vertical-align: middle;
         }
@@ -59,11 +59,6 @@
             font-weight: bold;
             font-size: 11pt;
         }
-        .status-lunas { background-color: #d4edda; color: #155724; }
-        .status-tunggak { background-color: #f8d7da; color: #721c24; }
-        .status-belum { background-color: #fff3cd; color: #856404; }
-        .checkmark { color: #28a745; font-weight: bold; font-size: 14pt; }
-        .cross { color: #dc3545; font-weight: bold; font-size: 14pt; }
         .footer {
             margin-top: 40pt;
             text-align: center;
@@ -73,6 +68,18 @@
             font-weight: bold;
             font-size: 12pt;
             background-color: #e9ecef;
+        }
+        .status-lunas {
+            background-color: #d4edda !important;
+            color: #155724 !important;
+        }
+        .status-belum {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+        }
+        .status-tunggak {
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
         }
     </style>
 </head>
@@ -84,14 +91,14 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 25%;">Nama Siswa</th>
-                <th style="width: 10%;">Minggu 1</th>
-                <th style="width: 10%;">Minggu 2</th>
-                <th style="width: 10%;">Minggu 3</th>
-                <th style="width: 10%;">Minggu 4</th>
-                <th style="width: 12%;">Total Bayar</th>
-                <th style="width: 12%;">Tunggakan</th>
-                <th style="width: 11%;">Status</th>
+                <th style="width: 22%;">Nama Siswa</th>
+                <th style="width: 9%;">Mg 1</th>
+                <th style="width: 9%;">Mg 2</th>
+                <th style="width: 9%;">Mg 3</th>
+                <th style="width: 9%;">Mg 4</th>
+                <th style="width: 11%;">Total Bayar</th>
+                <th style="width: 11%;">Tunggakan</th>
+                <th style="width: 10%;">Status</th>
             </tr>
         </thead>
         <tbody>
@@ -102,7 +109,7 @@
                     $paidCount = $studentPayments->where('status', 'paid')->count();
                     $paidAmount = $paidCount * 5000;
                     $arrears = 20000 - $paidAmount;
-                    $status = $paidCount == 4 ? 'LUNAS' : ($paidCount == 0 ? 'BELUM BAYAR' : 'TUNGG AKAN');
+                    $status = $paidCount == 4 ? 'LUNAS' : ($paidCount == 0 ? 'BELUM BAYAR' : 'TUNGGAKAN');
                     $statusClass = $paidCount == 4 ? 'status-lunas' : ($paidCount == 0 ? 'status-belum' : 'status-tunggak');
                     $totalPaid += $paidAmount;
                     $totalArrears += $arrears;
@@ -112,11 +119,11 @@
                     <td class="name"><?php echo e($student->name); ?></td>
                     <?php for($w = 1; $w <= 4; $w++): ?>
                         <?php $payment = $studentPayments->where('week_number', $w)->first(); ?>
-                        <td><?php echo e($payment && $payment->status == 'paid' ? '<span class="checkmark">✓</span>' : '<span class="cross">✗</span>'); ?></td>
+                        <td style="font-size: 14pt; font-weight: bold;"><?php echo e($payment && $payment->status == 'paid' ? '✓' : '✗'); ?></td>
                     <?php endfor; ?>
                     <td>Rp <?php echo e(number_format($paidAmount, 0, ',', '.')); ?></td>
                     <td>Rp <?php echo e(number_format($arrears, 0, ',', '.')); ?></td>
-                    <td class="<?php echo e($statusClass); ?>"><?php echo e($status); ?></td>
+                    <td class="<?php echo e($statusClass); ?> font-weight: bold;"><?php echo e($status); ?></td>
                 </tr>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             <tr class="total-row">
@@ -135,5 +142,4 @@
     </div>
 </body>
 </html>
-
 <?php /**PATH C:\laragon\www\projectsc\resources\views/bendahara/laporan-pembayaran-cetak.blade.php ENDPATH**/ ?>

@@ -40,10 +40,81 @@
                 </div>
             </div>
 
-            <div class="text-center pt-8 border-t-4 border-dashed border-gray-300">
-                <button type="submit" class="px-12 py-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xl font-bold rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transform transition-all duration-300 border-4 border-transparent hover:border-blue-300">
-                    📄 CETAK LAPORAN
-                </button>
+            <div class="pt-8 border-t-4 border-dashed border-gray-300">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- CETAK FORM -->
+                    <div class="bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-2xl border-4 border-blue-200">
+                        <h3 class="text-2xl font-bold text-blue-800 mb-6 text-center">📄 Cetak HTML</h3>
+                        <form method="POST" action="<?php echo e(route('bendahara.laporan.cetak')); ?>">
+                            <?php echo csrf_field(); ?>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Bulan</label>
+                                    <select name="month" required class="w-full px-4 py-3 border-4 border-gray-300 rounded-xl text-lg font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all">
+                                        <?php $__currentLoopData = $months; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $m): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($m); ?>" <?php echo e(old('month', now()->month) == $m ? 'selected' : ''); ?>>
+                                                <?php echo e(Carbon::create(now()->year, $m)->locale('id')->translatedFormat('F')); ?>
+
+                                            </option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Tahun</label>
+                                    <select name="year" required class="w-full px-4 py-3 border-4 border-gray-300 rounded-xl text-lg font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all">
+                                        <?php $__currentLoopData = $years; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $y): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($y); ?>" <?php echo e(old('year', now()->year) == $y ? 'selected' : ''); ?>>
+                                                <?php echo e($y); ?>
+
+                                            </option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    </select>
+                                </div>
+                                <div class="text-center pt-4">
+                                    <button type="submit" class="px-10 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xl font-bold rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transform transition-all duration-300 w-full">
+                                        📄 CETAK LAPORAN
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- PDF FORM -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl border-4 border-green-200">
+                        <h3 class="text-2xl font-bold text-green-800 mb-6 text-center">⬇️ Download PDF</h3>
+                        <form method="GET" action="<?php echo e(route('bendahara.laporan.pdf')); ?>">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Bulan</label>
+                                    <select name="month" required class="w-full px-4 py-3 border-4 border-gray-300 rounded-xl text-lg font-semibold focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-200 transition-all">
+                                        <?php $__currentLoopData = $months; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $m): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($m); ?>" <?php echo e(old('month', now()->month) == $m ? 'selected' : ''); ?>>
+                                                <?php echo e(Carbon::create(now()->year, $m)->locale('id')->translatedFormat('F')); ?>
+
+                                            </option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Tahun</label>
+                                    <select name="year" required class="w-full px-4 py-3 border-4 border-gray-300 rounded-xl text-lg font-semibold focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-200 transition-all">
+                                        <?php $__currentLoopData = $years; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $y): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($y); ?>" <?php echo e(old('year', now()->year) == $y ? 'selected' : ''); ?>>
+                                                <?php echo e($y); ?>
+
+                                            </option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    </select>
+                                </div>
+                                <div class="text-center pt-4">
+                                    <button type="submit" class="px-10 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xl font-bold rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transform transition-all duration-300 w-full">
+                                        ⬇️ DOWNLOAD PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </form>
 
