@@ -19,13 +19,21 @@
                         📝
                     <?php elseif($statusHariIni == 'alpha'): ?>
                         ❌
+                    <?php elseif($statusHariIni == 'libur'): ?>
+                        📅
                     <?php else: ?>
                         ⏳
                     <?php endif; ?>
                 </div>
                 <div class="text-lg font-semibold mb-2">
-                    <?php echo e(ucfirst($statusHariIni)); ?>
+                    <?php if($statusHariIni == 'belum_absen'): ?>
+                        Belum Absen
+                    <?php elseif($statusHariIni == 'libur'): ?>
+                        Hari Libur
+                    <?php else: ?>
+                        <?php echo e(ucfirst($statusHariIni)); ?>
 
+                    <?php endif; ?>
                 </div>
                 <div class="text-sm text-gray-600">
                     <?php echo e(\Carbon\Carbon::now()->locale('id')->format('l, d F Y')); ?>
