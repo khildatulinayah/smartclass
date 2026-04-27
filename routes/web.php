@@ -69,7 +69,7 @@ Route::post('/laporan-pembayaran/cetak', [BendaharaController::class, 'laporanCe
         Route::get('/laporan-pembayaran/pdf', [BendaharaController::class, 'laporanPdf'])->name('laporan.pdf');
     });
     
-    // Sekretaris routes
+
     Route::middleware('role:sekretaris')->prefix('sekretaris')->name('sekretaris.')->group(function () {
         Route::get('/dashboard', [SekretarisController::class, 'dashboard'])->name('dashboard');
         Route::get('/absensi', [SekretarisController::class, 'simpleAttendance'])->name('absensi');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Attendance;
 use App\Models\Transaction;
+use App\Models\WeeklyPayment;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -12,7 +13,7 @@ class AdminController extends Controller
     public function dashboard()
     {
         // Get real-time statistics
-        $totalStudents = User::where('role', 'siswa')->count();
+        $totalStudents = User::where('role', 'siswa')->where('is_active', true)->count();
         
         // Attendance statistics for current month
         $currentMonth = now()->month;
@@ -62,10 +63,14 @@ class AdminController extends Controller
             'email' => $request->email,
             'password' => bcrypt($request->password),
             'role' => 'siswa',
+            'is_active' => true,
         ]);
 
         // Create default cash transaction for new student
         $this->createDefaultCashTransaction($user->id);
+
+        // Generate weekly payments for current month
+        $this->generateStudentWeeklyPayments($user->id);
 
         return redirect()->route('admin.students')->with('success', 'Student created successfully');
     }
@@ -80,6 +85,26 @@ class AdminController extends Controller
             'date' => now(),
             'created_by' => auth()->id()
         ]);
+    }
+
+    private function generateStudentWeeklyPayments($studentId)
+    {
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+        
+        for ($week = 1; $week <= 4; $week++) {
+            WeeklyPayment::create([
+                'student_id' => $studentId,
+                'week_number' => $week,
+                'month' => $currentMonth,
+                'year' => $currentYear,
+                'amount' => 5000,
+                'status' => 'unpaid',
+                'payment_date' => null,
+                'transaction_id' => null,
+                'created_by' => auth()->id(),
+            ]);
+        }
     }
 
     public function editStudent($id)

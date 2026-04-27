@@ -20,7 +20,7 @@ class SekretarisController extends Controller
     public function simpleAttendance(Request $request)
     {
         $selectedDate = $request->input('date', now()->toDateString());
-        $students = User::where('role', 'siswa')->orderBy('name')->get();
+        $students = User::where('role', 'siswa')->where('is_active', true)->orderBy('name')->get();
         
         $holiday = Holiday::where('date', $selectedDate)->first();
         
@@ -54,7 +54,7 @@ class SekretarisController extends Controller
         $holidayNote = $request->input('holiday_note');
         
         // Save holiday if provided
-        if ($holidayNote !== null) {
+        if ($holidayNote !== null && trim($holidayNote) !== '') {
             Holiday::updateOrCreate(
                 ['date' => $date],
                 [
@@ -122,7 +122,7 @@ class SekretarisController extends Controller
     public function getTodayAttendance()
     {
         $today = now()->toDateString();
-        $students = User::where('role', 'siswa')->orderBy('name')->get();
+        $students = User::where('role', 'siswa')->where('is_active', true)->orderBy('name')->get();
         
         $attendances = Attendance::where('date', $today)->get()->keyBy('student_id');
         
@@ -149,7 +149,7 @@ class SekretarisController extends Controller
         $currentMonth = request('month', now()->month);
         $currentYear = now()->year;
         
-        $students = User::where('role', 'siswa')->orderBy('name')->get();
+        $students = User::where('role', 'siswa')->where('is_active', true)->orderBy('name')->get();
         
         // Get attendance data for current month
         $attendances = Attendance::whereMonth('date', $currentMonth)
@@ -215,7 +215,7 @@ class SekretarisController extends Controller
     // Daftar Siswa
     public function studentList()
     {
-        $students = User::where('role', 'siswa')->orderBy('name')->get();
+        $students = User::where('role', 'siswa')->where('is_active', true)->orderBy('name')->get();
         return view('sekretaris.student-list', compact('students'));
     }
 
@@ -226,13 +226,13 @@ class SekretarisController extends Controller
         $bulan = $request->bulan;
         $tahun = $request->tahun;
 
-        // 🔥 kalau belum pilih bulan → tampilkan halaman filter dulu
+        // kalau belum pilih bulan → tampilkan halaman filter dulu
         if (!$bulan || !$tahun) {
             return view('sekretaris.laporan-filter', compact('bulan', 'tahun'));
         }
 
-        // 🔥 kalau sudah pilih → baru generate laporan
-        $students = User::where('role', 'siswa')->orderBy('name')->get();
+        // kalau sudah pilih → baru generate laporan
+        $students = User::where('role', 'siswa')->where('is_active', true)->orderBy('name')->get();
 
         $attendances = Attendance::whereMonth('date', $bulan)
             ->whereYear('date', $tahun)
@@ -280,16 +280,12 @@ class SekretarisController extends Controller
         $bulan = $request->bulan;
         $tahun = $request->tahun;
 
-        $students = User::where('role', 'siswa')->orderBy('name')->get();
+        $students = User::where('role', 'siswa')->where('is_active', true)->orderBy('name')->get();
 
         $attendances = Attendance::whereMonth('date', $bulan)
             ->whereYear('date', $tahun)
             ->get()
             ->groupBy('student_id');
-
-        // Debug: Tampilkan jumlah data absensi yang ditemukan
-        \Log::info("Total attendance records for $bulan-$tahun: " . $attendances->count());
-        \Log::info("Total students: " . $students->count());
 
         $jumlahHari = \Carbon\Carbon::create($tahun, $bulan)->daysInMonth;
 
@@ -298,19 +294,11 @@ class SekretarisController extends Controller
         foreach ($students as $student) {
             $dataPerHari = [];
             $dataAbsensi = $attendances[$student->id] ?? collect();
-            
-            // Debug: Log untuk setiap siswa
-            \Log::info("Student: {$student->name} (ID: {$student->id}), Attendance count: {$dataAbsensi->count()}");
 
             for ($i = 1; $i <= $jumlahHari; $i++) {
                 $tanggal = \Carbon\Carbon::create($tahun, $bulan, $i)->toDateString();
                 $absen = $dataAbsensi->firstWhere('date', $tanggal);
                 $dataPerHari[$i] = $absen ? $absen->status : '-';
-                
-                // Debug: Log jika ada data absensi
-                if ($absen) {
-                    \Log::info("Found attendance for {$student->name} on {$tanggal}: {$absen->status}");
-                }
             }
 
             $total = [

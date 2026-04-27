@@ -16,16 +16,37 @@ class BendaharaController extends Controller
     {
         $today = Carbon::now();
         $isWednesday = $today->dayOfWeek === 3;
-        $currentWeek = $today->weekOfMonth;
+        
+        // Perbaikan: hitung week number berdasarkan hari Rabu, bukan weekOfMonth
+        $startOfMonth = $today->copy()->startOfMonth();
+        $firstWednesday = $startOfMonth->copy()->next(Carbon::WEDNESDAY);
+        
+        // Jika hari ini sebelum Rabu pertama bulan ini, pakai minggu 1
+        if ($today->lt($firstWednesday)) {
+            $currentWeek = 1;
+        } else {
+            // Hitung selisih hari dari Rabu pertama, dibagi 7, +1
+            $daysSinceFirstWednesday = $today->diffInDays($firstWednesday);
+            $currentWeek = min(4, intval($daysSinceFirstWednesday / 7) + 1);
+        }
+        
         $nextWednesday = $today->copy()->next(Carbon::WEDNESDAY)->format('d M Y');
         
         $currentMonth = $today->month;
         $currentYear = $today->year;
         
+        // Generate tagihan jika belum ada
+        $this->generateMonthlyBills($currentMonth, $currentYear);
+        
         $payments = WeeklyPayment::where('month', $currentMonth)
             ->where('year', $currentYear)
             ->get();
-        $currentWeekUnpaid = $payments->where('week_number', $currentWeek)->where('status', 'unpaid')->count();
+        
+        // Perbaikan: filter berdasarkan minggu aktif yang sudah lewat
+        $currentWeekUnpaid = $payments
+            ->where('week_number', $currentWeek)
+            ->where('status', 'unpaid')
+            ->count();
         
         return view('bendahara.dashboard', compact(
             'isWednesday', 
@@ -47,7 +68,7 @@ class BendaharaController extends Controller
         $totalExpense = $transactions->where('type', 'expense')->sum('amount');
         $balance = $totalIncome - $totalExpense;
         
-        $students = User::where('role', 'siswa')->orderBy('name')->get();
+        $students = User::where('role', 'siswa')->where('is_active', true)->orderBy('name')->get();
         
         return view('bendahara.simple-cash', compact('transactions', 'totalIncome', 'totalExpense', 'balance', 'students'));
     }
@@ -63,7 +84,6 @@ class BendaharaController extends Controller
                 'student_id' => 'nullable|exists:users,id'
             ]);
 
-            // Log untuk debugging
             Log::info('Creating transaction:', [
                 'student_id' => $request->student_id,
                 'type' => $request->type,
@@ -129,7 +149,7 @@ class BendaharaController extends Controller
     // Daftar Siswa
     public function studentList()
     {
-        $students = User::where('role', 'siswa')->orderBy('name')->get();
+        $students = User::where('role', 'siswa')->where('is_active', true)->orderBy('name')->get();
         return view('bendahara.student-list', compact('students'));
     }
 
@@ -161,12 +181,27 @@ class BendaharaController extends Controller
         $paymentsByStudent = $payments->groupBy('student_id');
         
         $today = Carbon::now();
-        $isWednesday = $today->dayOfWeek === 3; // 0=Senin, 3=Rabu
-        $currentWeek = $today->weekOfMonth;
-        $nextWednesday = $today->copy()->next(Carbon::WEDNESDAY)->format('d M Y');
-        $currentWeekUnpaid = $payments->where('week_number', $currentWeek)->where('status', 'unpaid')->count();
+        $isWednesday = $today->dayOfWeek === 3;
         
-        $totalStudents = User::where('role', 'siswa')->count();
+        // Perbaikan perhitungan minggu aktif
+        $startOfMonth = $today->copy()->startOfMonth();
+        $firstWednesday = $startOfMonth->copy()->next(Carbon::WEDNESDAY);
+        
+        if ($today->lt($firstWednesday)) {
+            $currentWeek = 1;
+        } else {
+            $daysSinceFirstWednesday = $today->diffInDays($firstWednesday);
+            $currentWeek = min(4, intval($daysSinceFirstWednesday / 7) + 1);
+        }
+        
+        $nextWednesday = $today->copy()->next(Carbon::WEDNESDAY)->format('d M Y');
+        
+        $currentWeekUnpaid = $payments
+            ->where('week_number', $currentWeek)
+            ->where('status', 'unpaid')
+            ->count();
+        
+        $totalStudents = User::where('role', 'siswa')->where('is_active', true)->count();
         $totalBills = $payments->count();
         $paidBills = $payments->where('status', 'paid')->count();
         $unpaidBills = $payments->where('status', 'unpaid')->count();
@@ -204,7 +239,7 @@ class BendaharaController extends Controller
             return 0;
         }
         
-        $students = User::where('role', 'siswa')->get();
+        $students = User::where('role', 'siswa')->where('is_active', true)->get();
         $generatedCount = 0;
         
         foreach ($students as $student) {
@@ -218,7 +253,7 @@ class BendaharaController extends Controller
                     'status' => 'unpaid',
                     'payment_date' => null,
                     'transaction_id' => null,
-                    'created_by' => 1,
+                    'created_by' => auth()->id() ?? 1,
                 ]);
                 $generatedCount++;
             }
@@ -345,8 +380,6 @@ class BendaharaController extends Controller
         $pdf = Pdf::loadView('bendahara.laporan-pembayaran-cetak', compact('paymentsByStudent', 'month', 'year', 'monthName'));
         $pdf->setPaper('a4', 'portrait');
 
-return $pdf->stream('laporan-pembayaran-' . $monthName . '.pdf');
+        return $pdf->stream('laporan-pembayaran-' . $monthName . '.pdf');
     }
 }
-
-

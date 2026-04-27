@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
             $table->integer('week_number'); // 1, 2, 3, 4 (minggu ke berapa)
-            $table->string('month'); // januari, februari, dll
+$table->integer('month'); // 1-12
             $table->integer('year');
             $table->decimal('amount', 10, 2); // Rp 5.000 per minggu
             $table->enum('status', ['paid', 'unpaid'])->default('unpaid');

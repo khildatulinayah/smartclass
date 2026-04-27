@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\Transaction;
 use App\Models\WeeklyPayment;
+use App\Models\Holiday;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -29,11 +30,19 @@ class SiswaController extends Controller
         $totalDays = $attendances->count();
         
         // Get today's attendance status
+        $today = now()->format('Y-m-d');
         $todayAttendance = Attendance::where('student_id', $student->id)
-            ->where('date', now()->format('Y-m-d'))
+            ->where('date', $today)
             ->first();
-            
-        $statusHariIni = $todayAttendance ? $todayAttendance->status : 'hadir';
+        
+        // Cek apakah hari ini libur
+        $isHoliday = Holiday::where('date', $today)->exists();
+        
+        if ($isHoliday) {
+            $statusHariIni = 'libur';
+        } else {
+            $statusHariIni = $todayAttendance ? $todayAttendance->status : 'belum_absen';
+        }
         
         // Get payment/transaction history for current month
         $transactions = Transaction::where('student_id', $student->id)
@@ -142,13 +151,15 @@ class SiswaController extends Controller
             'hadir' => 'Hadir',
             'sakit' => 'Sakit',
             'izin' => 'Izin',
-            'alpha' => 'Alpha'
+            'alpha' => 'Alpha',
+            'libur' => 'Libur',
+            'belum_absen' => 'Belum Absen'
         ];
         
         return $statusTexts[$status] ?? 'Hadir';
     }
 
-    // Method baru untuk riwayat absensi lengkap
+    // Method untuk riwayat absensi lengkap
     public function riwayatAbsensi(Request $request)
     {
         $student = auth()->user();
