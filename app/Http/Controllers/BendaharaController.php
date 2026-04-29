@@ -48,11 +48,50 @@ class BendaharaController extends Controller
             ->where('status', 'unpaid')
             ->count();
         
+        // --- DATA KEUANGAN RILL ---
+        $transactions = Transaction::orderBy('date', 'desc')->get();
+        $totalIncomeAll = $transactions->where('type', 'income')->sum('amount');
+        $totalExpenseAll = $transactions->where('type', 'expense')->sum('amount');
+        $balance = $totalIncomeAll - $totalExpenseAll;
+        
+        // Filter bulan ini
+        $monthlyTransactions = Transaction::whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->get();
+        $monthlyIncome = $monthlyTransactions->where('type', 'income')->sum('amount');
+        $monthlyExpense = $monthlyTransactions->where('type', 'expense')->sum('amount');
+        
+        // --- DATA PEMBAYARAN MINGGUAN ---
+        $totalStudents = User::where('role', 'siswa')->where('is_active', true)->count();
+        $totalBills = $payments->count();
+        $paidBills = $payments->where('status', 'paid')->count();
+        $unpaidBills = $payments->where('status', 'unpaid')->count();
+        $paidAmount = $payments->where('status', 'paid')->sum('amount');
+        $unpaidAmount = $payments->where('status', 'unpaid')->sum('amount');
+        
+        // --- RIWAYAT TERBARU ---
+        $recentPayments = WeeklyPayment::with('student')
+            ->where('status', 'paid')
+            ->orderBy('payment_date', 'desc')
+            ->orderBy('updated_at', 'desc')
+            ->take(6)
+            ->get();
+        
         return view('bendahara.dashboard', compact(
             'isWednesday', 
             'currentWeek', 
             'nextWednesday', 
-            'currentWeekUnpaid'
+            'currentWeekUnpaid',
+            'balance',
+            'monthlyIncome',
+            'monthlyExpense',
+            'totalStudents',
+            'totalBills',
+            'paidBills',
+            'unpaidBills',
+            'paidAmount',
+            'unpaidAmount',
+            'recentPayments'
         ));
     }
 

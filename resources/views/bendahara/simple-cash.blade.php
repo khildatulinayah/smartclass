@@ -55,6 +55,10 @@
 
     <!-- Action Buttons -->
     <div class="mb-6 flex flex-col sm:flex-row gap-4">
+        <a href="{{ route('bendahara.dashboard') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m14 14l-7-7m-7 7l7-7m-7 7l7-7m7 7l7-7m-7 7l7-7m-7 7l7-7m-7 7l7-7"></path></svg>
+            Kembali ke Dashboard
+        </a>
         <button onclick="openTransactionModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>

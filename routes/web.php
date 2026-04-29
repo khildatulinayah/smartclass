@@ -78,11 +78,9 @@ Route::post('/laporan-pembayaran/cetak', [BendaharaController::class, 'laporanCe
         Route::get('/tracker', [SekretarisController::class, 'simpleTracker'])->name('tracker');
         Route::get('/laporan-absensi', [SekretarisController::class, 'laporanAbsensi'])->name('laporan');
         Route::get('/laporan-absensi/cetak', [SekretarisController::class, 'cetakAbsensi'])->name('laporan.cetak');
+        Route::get('/api/student-attendance/{studentId}', [SekretarisController::class, 'getStudentAttendance']);
     });
 
-    // Public API routes
-    Route::get('/api/student-attendance/{studentId}', [SekretarisController::class, 'getStudentAttendance']);
-    
     // Siswa routes
     Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
         Route::get('/dashboard', [SiswaController::class, 'dashboard'])->name('dashboard');

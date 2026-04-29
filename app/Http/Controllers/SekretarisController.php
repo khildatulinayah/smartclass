@@ -13,7 +13,65 @@ class SekretarisController extends Controller
 {
     public function dashboard()
     {
-        return view('sekretaris.dashboard');
+        $today = now()->toDateString();
+        
+        // Ambil semua siswa aktif beserta profil student (kelas)
+        $students = User::where('role', 'siswa')
+                        ->where('is_active', true)
+                        ->with('student')
+                        ->orderBy('name')
+                        ->get();
+        
+        // Ambil absensi hari ini
+        $todayAttendances = Attendance::where('date', $today)
+                                      ->with('student')
+                                      ->get()
+                                      ->keyBy('student_id');
+        
+        // Pastikan semua siswa punya record absensi hari ini (create jika belum ada)
+        foreach ($students as $student) {
+            if (!$todayAttendances->has($student->id)) {
+                $attendance = Attendance::create([
+                    'student_id' => $student->id,
+                    'date' => $today,
+                    'status' => 'belum_absen',
+                    'attendance_time' => null,
+                    'created_by' => auth()->id()
+                ]);
+                $todayAttendances->put($student->id, $attendance);
+            }
+        }
+        
+        // Hitung statistik
+        $stats = [
+            'total' => $students->count(),
+            'hadir' => $todayAttendances->where('status', 'hadir')->count(),
+            'sakit' => $todayAttendances->where('status', 'sakit')->count(),
+            'izin' => $todayAttendances->where('status', 'izin')->count(),
+            'alpha' => $todayAttendances->where('status', 'alpha')->count(),
+            'belum_absen' => $todayAttendances->where('status', 'belum_absen')->count(),
+        ];
+        
+        // Data untuk tabel (limit 10 untuk dashboard)
+        $recentAttendances = $students->map(function ($student) use ($todayAttendances) {
+            $attendance = $todayAttendances->get($student->id);
+            return [
+                'student' => $student,
+                'status' => $attendance ? $attendance->status : 'belum_absen',
+                'attendance_time' => $attendance ? $attendance->attendance_time : null,
+                'class' => $student->student ? $student->student->class : '-',
+            ];
+        })->take(10);
+        
+        // Cek hari libur
+        $holiday = Holiday::where('date', $today)->first();
+        
+        return view('sekretaris.dashboard', compact(
+            'today',
+            'stats',
+            'recentAttendances',
+            'holiday'
+        ));
     }
 
     // Absensi Harian (Simple Version)
@@ -89,7 +147,6 @@ class SekretarisController extends Controller
         return redirect()->route('sekretaris.absensi', ['date' => $date])
             ->with('success', 'Keterangan libur dihapus!');
     }
-
 
     public function quickUpdateAttendance(Request $request)
     {
@@ -199,17 +256,32 @@ class SekretarisController extends Controller
                                 ->orderBy('date')
                                 ->get();
         
+        // Fix: Format date ke string agar bisa jadi key array
         $holidays = Holiday::whereMonth('date', $month)
                           ->whereYear('date', $year)
-                          ->pluck('note', 'date');
+                          ->get()
+                          ->mapWithKeys(function ($holiday) {
+                              return [$holiday->date->format('Y-m-d') => $holiday->note];
+                          });
         
-        foreach ($attendances as $attendance) {
-            if (isset($holidays[$attendance->date])) {
-                $attendance->holiday_note = $holidays[$attendance->date];
-            }
-        }
+        // Transform data untuk JSON response yang aman
+        $data = $attendances->map(function ($attendance) use ($holidays) {
+            $dateString = $attendance->date ? $attendance->date->format('Y-m-d') : null;
+            
+            return [
+                'id' => $attendance->id,
+                'student_id' => $attendance->student_id,
+                'date' => $dateString,
+                'status' => $attendance->status,
+                'attendance_time' => $attendance->attendance_time ? $attendance->attendance_time->format('H:i:s') : null,
+                'created_by' => $attendance->created_by,
+                'created_at' => $attendance->created_at,
+                'updated_at' => $attendance->updated_at,
+                'holiday_note' => $holidays[$dateString] ?? null,
+            ];
+        });
         
-        return response()->json($attendances);
+        return response()->json($data);
     }
 
     // Daftar Siswa
@@ -218,7 +290,6 @@ class SekretarisController extends Controller
         $students = User::where('role', 'siswa')->where('is_active', true)->orderBy('name')->get();
         return view('sekretaris.student-list', compact('students'));
     }
-
 
     // Laporan Absensi
     public function laporanAbsensi(Request $request)

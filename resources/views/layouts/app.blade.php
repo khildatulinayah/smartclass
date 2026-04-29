@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo.png') }}">
     <link rel="shortcut icon" href="{{ asset('images/logo.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             image-rendering: pixelated;
@@ -55,12 +55,11 @@
         }
         
         body {
-            background-color: #87ceeb;
-            background-image: 
-                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,.3) 2px, rgba(255,255,255,.3) 4px),
-                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px);
-            background-size: 100% 100%, 100% 100%;
+            background: linear-gradient(135deg, #cacacb 0%, #9da6e9 100%);
+            margin: 0;
+            padding: 0;
             min-height: 100vh;
+            font-family: 'Inter', sans-serif;
         }
         
         /* Fix untuk layout grid */
@@ -145,7 +144,7 @@
         .text-green-600 { color: #16a34a; }
         .text-red-600 { color: #dc2626; }
         .text-blue-600 { color: #2563eb; }
-        .text-yellow-600 { color: #ca8a04; }
+        .text-yellow-600 { color: #7c7b78; }
         .text-blue-800 { color: #1e40af; }
         .text-green-800 { color: #166534; }
         .text-yellow-800 { color: #92400e; }
@@ -157,31 +156,9 @@
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="bg-gray-900 pixel-border border-b-4 border-gray-900 mb-8">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="pixel-font text-yellow-300 text-xs" style="letter-spacing: 2px;">▸ SMARTCLASS</h1>
-            <div class="flex items-center gap-4">
-                <span class="pixel-font text-white text-xs">PLAYER: {{ strtoupper(auth()->user()->name) }}</span>
-                <form method="POST" action="{{ route('logout') }}" class="inline">
-                    @csrf
-                    <button type="submit" class="pixel-button px-3 py-2 bg-red-400 text-black pixel-font text-xs">LOGOUT</button>
-                </form>
-            </div>
-        </div>
-    </nav>
-
     <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4">
+    <main style="width: 100%; height: 100vh; overflow-y: auto;">
         @yield('content')
     </main>
-
-    <!-- Footer -->
-    <footer class="bg-gray-900 pixel-border border-b-0 border-r-0 mt-12 mb-0">
-        <div class="max-w-6xl mx-auto px-4 py-6 text-center">
-            <p class="pixel-font text-yellow-300 text-xs mb-2">~ SESSION ACTIVE ~</p>
-            <p class="pixel-font text-white text-xs">SMARTCLASS 2025/2026</p>
-        </div>
-    </footer>
 </body>
 </html>
